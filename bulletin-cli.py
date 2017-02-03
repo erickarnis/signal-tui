@@ -1,9 +1,21 @@
-#!/usr/bin/env python
+'''
+ ____  __ __ _     _       ___ ______ ____ ____           __ _     ____ 
+|    \|  |  | |   | |     /  _|      |    |    \         /  | |   |    |
+|  o  |  |  | |   | |    /  [_|      ||  ||  _  |_____  /  /| |    |  | 
+|     |  |  | |___| |___|    _|_|  |_||  ||  |  |     |/  / | |___ |  | 
+|  O  |  :  |     |     |   [_  |  |  |  ||  |  |_____/   \_|     ||  | 
+|     |     |     |     |     | |  |  |  ||  |  |     \     |     ||  | 
+|_____|\__,_|_____|_____|_____| |__| |____|__|__|      \____|_____|____|
 
+By Eric Karnis and Thales Ferria
+'''
+#!/usr/bin/env python
+import os
 from os import system
 import curses
 
-username = 0
+#global variables
+username = "+16477798191"
 
 def get_param(prompt_string):
     screen.clear()
@@ -24,31 +36,43 @@ def execute_cmd(cmd_string):
     raw_input("Press enter")
     print ""
 
+#Main functionality
+
+#working
 def register():
-    global username
-    username = get_param("Enter your phone number with country code eg for canada +16477798192")
     curses.endwin()
     execute_cmd("signal-cli -u " + username + " register")
-
-def verify():
-    verification_number = get_param("Enter verification code that should have been texted to your phone")
+#working
+def verify(verification_number):
     curses.endwin()
     #not sure why username has to be cast to string here, but not in register
-    execute_cmd("signal-cli -u " + str(username) + " verify " + str(verification_number))
+    execute_cmd("signal-cli -u " + username + " verify " + str(verification_number))
 
-#TODO
-def send_message():
-	recipient = get_param("Enter reciepient number with country code eg for canada +16477798292")
-    message = get_param("Enter message")
+#TODO works
+def send_message(recipient, message):
     curses.endwin()
-    execute_cmd("signal-cli -u " + str(username) + " send -m " + message + " [" + str(recipient) + "]")
-
+    execute_cmd("signal-cli -u " + username + " send -m \"" + message + "\"[" + recipient + "]")
 
 #TODO
 def check_messages():
+    curses.endwin()
+    execute_cmd("signal-cli -u " + str(username) + " receive")
+
+#startup functions
+def user_data_open():
+	if( file_is_empty("user_data.txt") ):
+		user_data = open("user_data.txt", "w+")
+	else: 
+		user_data = open("user_data.txt", "r+")
+	print "Opening mode : ", user_data.mode
+	user_data.close()
+
+
+
 
 #main
 #TODO make register write to encrypted file, make main check for file on startup
+user_data_open()
 x = 0
 
 while x != ord('5'):
@@ -66,9 +90,18 @@ while x != ord('5'):
 
     x = screen.getch()
 
-    if x == ord('1'): register()
-    if x == ord('2'): verify()
-    if x == ord('3'): send_message()
-    if x == ord('4'): check_messages()
+    if x == ord('1'):
+        global username
+    	username = get_param("Enter your phone number with country code eg for canada +16477798192") 
+    	register()
+    if x == ord('2'):
+        verification_number = get_param("Enter verification code that should have been texted to your phone")
+    	verify(verification_number)
+    if x == ord('3'):
+        recipient = get_param("Enter recipient's phone number with country code eg for canada +16477798192") 
+    	message = get_param("Enter message") 
+    	send_message(recipient, message)
+    if x == ord('4'): 
+    	check_messages()
 
 curses.endwin()
