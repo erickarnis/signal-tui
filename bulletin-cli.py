@@ -39,6 +39,9 @@ def verify():
 #TODO
 def send_message():
 	recipient = get_param("Enter reciepient number with country code eg for canada +16477798292")
+    message = get_param("Enter message")
+    curses.endwin()
+    execute_cmd("signal-cli -u " + str(username) + " send -m " + message + " [" + str(recipient) + "]")
 
 
 #TODO
