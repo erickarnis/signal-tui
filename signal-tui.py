@@ -1,14 +1,17 @@
 '''
- ____  __ __ _     _       ___ ______ ____ ____        ______ __ __ ____ 
-|    \|  |  | |   | |     /  _|      |    |    \      |      |  |  |    |
-|  o  |  |  | |   | |    /  [_|      ||  ||  _  |_____|      |  |  ||  | 
-|     |  |  | |___| |___|    _|_|  |_||  ||  |  |     |_|  |_|  |  ||  | 
-|  O  |  :  |     |     |   [_  |  |  |  ||  |  |_____| |  | |  :  ||  | 
-|     |     |     |     |     | |  |  |  ||  |  |       |  | |     ||  | 
-|_____|\____|_____|_____|_____| |__| |____|__|__|       |__|  \____|____|
-                                                                         
-                                                                                   
-By Eric Karnis and Thales Ferria
+          @@\                               @@\          @@\               @@\ 
+          \__|                              @@ |         @@ |              \__|
+ @@@@@@@\ @@\  @@@@@@\  @@@@@@@\   @@@@@@\  @@ |       @@@@@@\   @@\   @@\ @@\ 
+@@  _____|@@ |@@  __@@\ @@  __@@\  \____@@\ @@ |@@@@@@\\_@@  _|  @@ |  @@ |@@ |
+\@@@@@@\  @@ |@@ /  @@ |@@ |  @@ | @@@@@@@ |@@ |\______| @@ |    @@ |  @@ |@@ |
+ \____@@\ @@ |@@ |  @@ |@@ |  @@ |@@  __@@ |@@ |         @@ |@@\ @@ |  @@ |@@ |
+@@@@@@@  |@@ |\@@@@@@@ |@@ |  @@ |\@@@@@@@ |@@ |         \@@@@  |\@@@@@@  |@@ |
+\_______/ \__| \____@@ |\__|  \__| \_______|\__|          \____/  \______/ \__|
+              @@\   @@ |                                                       
+              \@@@@@@  |                                                       
+               \______/     
+
+By Eric Karnis
 '''
 #!/usr/bin/env python
 import os
@@ -58,12 +61,12 @@ def verify(verification_number):
     #not sure why username has to be cast to string here, but not in register
     execute_cmd("signal-cli -u " + username + " verify " + str(verification_number))
 
-#TODO works
+#working
 def send_message(recipient, message):
     curses.endwin()
     execute_cmd("signal-cli -u " + username + " send -m \"" + message + "\"[" + recipient + "]")
 
-#TODO
+#TODO check if it works
 def check_messages():
     curses.endwin()
     execute_cmd("signal-cli -u " + str(username) + " receive")
