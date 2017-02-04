@@ -18,7 +18,7 @@ import os
 from os import system
 import curses
 
-#helper functions
+#window dressing
 def get_param(prompt_string):
     screen.clear()
     screen.border(0)
@@ -27,6 +27,7 @@ def get_param(prompt_string):
     input = screen.getstr(10, 10, 60)
     return input
 
+#helper functions
 def execute_cmd(cmd_string):
     system("clear")
     a = system(cmd_string)
@@ -41,41 +42,46 @@ def execute_cmd(cmd_string):
 def file_is_empty(path):
     return os.stat(path).st_size==0
 
-#global variables
-user_data = user_data = open("user_data.txt", "r+")
-username = ""
-if( file_is_empty("user_data.txt") == 0):
-    username = user_data.read(12);
-    print username
+#prepare username and user data file
+with open('user_data.txt', 'r') as file:
+    user_data = file.readlines()
 
-#Main functionality
+username = user_data[0]
 
-#working
+######################
+##Main functionality##
+######################
+
+#Registers the user with Whisper Systems. If it works, they will send a
+#verification number to the user's phone
 def register():
-    user_data.write(username);
+    user_data[0] = username
+    with open('stats.txt', 'w') as file:
+        file.writelines( user_data )
     curses.endwin()
     execute_cmd("signal-cli -u " + username + " register")
-#working
+
+#Sned's user's verification number to Whisper Systems
 def verify(verification_number):
     curses.endwin()
     #not sure why username has to be cast to string here, but not in register
     execute_cmd("signal-cli -u " + username + " verify " + str(verification_number))
 
-#working
+#Sends a message to another signal user
 def send_message(recipient, message):
     curses.endwin()
     execute_cmd("signal-cli -u " + username + " send -m \"" + message + "\"[" + recipient + "]")
 
-#TODO check if it works
+#Checks for unread messages
+#TODO have this check periodically and write all messages to a file
 def check_messages():
     curses.endwin()
     execute_cmd("signal-cli -u " + str(username) + " receive")
 
-#startup functions
+#############
+##Interface##
+#############
 
-
-#main
-#TODO make register write to encrypted file, make main check for file on startup
 x = 0
 
 while x != ord('5'):
@@ -107,5 +113,4 @@ while x != ord('5'):
     if x == ord('4'): 
     	check_messages()
 
-user_data.close()
 curses.endwin()
