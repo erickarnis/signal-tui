@@ -1,12 +1,13 @@
 '''
- ____  __ __ _     _       ___ ______ ____ ____           __ _     ____ 
-|    \|  |  | |   | |     /  _|      |    |    \         /  | |   |    |
-|  o  |  |  | |   | |    /  [_|      ||  ||  _  |_____  /  /| |    |  | 
-|     |  |  | |___| |___|    _|_|  |_||  ||  |  |     |/  / | |___ |  | 
-|  O  |  :  |     |     |   [_  |  |  |  ||  |  |_____/   \_|     ||  | 
-|     |     |     |     |     | |  |  |  ||  |  |     \     |     ||  | 
-|_____|\__,_|_____|_____|_____| |__| |____|__|__|      \____|_____|____|
-
+ ____  __ __ _     _       ___ ______ ____ ____        ______ __ __ ____ 
+|    \|  |  | |   | |     /  _|      |    |    \      |      |  |  |    |
+|  o  |  |  | |   | |    /  [_|      ||  ||  _  |_____|      |  |  ||  | 
+|     |  |  | |___| |___|    _|_|  |_||  ||  |  |     |_|  |_|  |  ||  | 
+|  O  |  :  |     |     |   [_  |  |  |  ||  |  |_____| |  | |  :  ||  | 
+|     |     |     |     |     | |  |  |  ||  |  |       |  | |     ||  | 
+|_____|\____|_____|_____|_____| |__| |____|__|__|       |__|  \____|____|
+                                                                         
+                                                                                   
 By Eric Karnis and Thales Ferria
 '''
 #!/usr/bin/env python
@@ -14,9 +15,7 @@ import os
 from os import system
 import curses
 
-#global variables
-username = "+16477798191"
-
+#helper functions
 def get_param(prompt_string):
     screen.clear()
     screen.border(0)
@@ -36,10 +35,21 @@ def execute_cmd(cmd_string):
     raw_input("Press enter")
     print ""
 
+def file_is_empty(path):
+    return os.stat(path).st_size==0
+
+#global variables
+user_data = user_data = open("user_data.txt", "r+")
+username = ""
+if( file_is_empty("user_data.txt") == 0):
+    username = user_data.read(12);
+    print username
+
 #Main functionality
 
 #working
 def register():
+    user_data.write(username);
     curses.endwin()
     execute_cmd("signal-cli -u " + username + " register")
 #working
@@ -59,20 +69,10 @@ def check_messages():
     execute_cmd("signal-cli -u " + str(username) + " receive")
 
 #startup functions
-def user_data_open():
-	if( file_is_empty("user_data.txt") ):
-		user_data = open("user_data.txt", "w+")
-	else: 
-		user_data = open("user_data.txt", "r+")
-	print "Opening mode : ", user_data.mode
-	user_data.close()
-
-
 
 
 #main
 #TODO make register write to encrypted file, make main check for file on startup
-user_data_open()
 x = 0
 
 while x != ord('5'):
@@ -104,4 +104,5 @@ while x != ord('5'):
     if x == ord('4'): 
     	check_messages()
 
+user_data.close()
 curses.endwin()
