@@ -2,8 +2,8 @@
           @@\                               @@\          @@\               @@\ 
           \__|                              @@ |         @@ |              \__|
  @@@@@@@\ @@\  @@@@@@\  @@@@@@@\   @@@@@@\  @@ |       @@@@@@\   @@\   @@\ @@\ 
-@@  _____|@@ |@@  __@@\ @@  __@@\  \____@@\ @@ |@@@@@@\\_@@  _|  @@ |  @@ |@@ |
-\@@@@@@\  @@ |@@ /  @@ |@@ |  @@ | @@@@@@@ |@@ |\______| @@ |    @@ |  @@ |@@ |
+@@  _____|@@ |@@  __@@\ @@  __@@\  \____@@\ @@ |@@@@@@\|_@@  _|  @@ |  @@ |@@ |
+\@@@@@@\  @@ |@@ /  @@ |@@ |  @@ | @@@@@@@ |@@ |\______\ @@ |    @@ |  @@ |@@ |
  \____@@\ @@ |@@ |  @@ |@@ |  @@ |@@  __@@ |@@ |         @@ |@@\ @@ |  @@ |@@ |
 @@@@@@@  |@@ |\@@@@@@@ |@@ |  @@ |\@@@@@@@ |@@ |         \@@@@  |\@@@@@@  |@@ |
 \_______/ \__| \____@@ |\__|  \__| \_______|\__|          \____/  \______/ \__|
@@ -15,8 +15,19 @@ By Eric Karnis
 This will be under gpl someday
 '''
 #!/usr/bin/env python3
-import curses, traceback, os
+import curses, traceback, os, string
 from os import system
+
+#-- Define the appearance of some interface elements
+hotkey_attr = curses.A_BOLD | curses.A_UNDERLINE
+menu_attr = curses.A_NORMAL
+
+#-- Define additional constants
+EXIT = 0
+CONTINUE = 1
+
+#-- Give screen module scope
+screen = None
 
 #helper functions
 def get_param(prompt_string):
@@ -77,41 +88,79 @@ def check_messages():
     curses.endwin()
     execute_cmd("signal-cli -u " + str(username) + " receive")
 
+#-- Create the topbar menu
+def topbar_menu(menus):
+    left = 2
+    for menu in menus:
+        menu_name = menu[0]
+        menu_hotkey = menu_name[0]
+        menu_no_hot = menu_name[1:]
+        screen.addstr(1, left, menu_hotkey, hotkey_attr)
+        screen.addstr(1, left+1, menu_no_hot, menu_attr)
+        left = left + len(menu_name) + 3
+        # Add key handlers for this hotkey
+        topbar_key_handler((menu_hotkey.upper(), menu[1]))
+        topbar_key_handler((menu_hotkey.lower(), menu[1]))
+    # Little aesthetic thing to display application title
+    screen.addstr(1, left-1,
+                  ">"*(52-left)+ " signal-tui",
+                  curses.A_STANDOUT)
+    screen.refresh()
+
+#-- Magic key handler both loads and processes keys strokes
+def topbar_key_handler(key_assign=None, key_dict={}):
+    if key_assign:
+        key_dict[ord(key_assign[0])] = key_assign[1]
+    else:
+        c = screen.getch()
+        if c in (curses.KEY_END, ord('!')):
+            return 0
+        elif c not in key_dict.keys():
+            curses.beep()
+            return 1
+        else:
+            return eval(key_dict[c])
+
+#-- Display the currently selected options
+def draw_dict():
+    screen.addstr(5,33, " "*43, curses.A_NORMAL)
+    screen.addstr(8,33, " "*43, curses.A_NORMAL)
+    screen.addstr(11,33, " "*43, curses.A_NORMAL)
+    screen.addstr(14,33, " "*43, curses.A_NORMAL)
+    screen.addstr(5, 33, cfg_dict['source'], curses.A_STANDOUT)
+    screen.addstr(8, 33, cfg_dict['target'], curses.A_STANDOUT)
+    screen.addstr(11,33, cfg_dict['type'], curses.A_STANDOUT)
+    screen.addstr(14,33, cfg_dict['proxy'], curses.A_STANDOUT)
+    screen.addstr(17,33, str(counter), curses.A_STANDOUT)
+    screen.refresh()
+
+
+
 #############
 ##Interface##
 #############
 
 def main(stdscr):
-    x = 0
-    
-    while x != ord('5'):
-        stdscr = curses.initscr()
-    
-        stdscr.clear()
-        stdscr.border(0)
-        stdscr.addstr(2, 2, "Please enter a number...")
-        stdscr.addstr(4, 4, "1 - Register your number")
-        stdscr.addstr(5, 4, "2 - Enter verification code")
-        stdscr.addstr(6, 4, "3 - Send a message")
-        stdscr.addstr(7, 4, "4 - Check messages")
-        stdscr.addstr(8, 4, "5 - Exit")
-        stdscr.refresh()
-    
-        x = stdscr.getch()
-    
-        if x == ord('1'):
-            global username
-            username = get_param("Enter your phone number with country code eg for canada +16477798192") 
-            register()
-        if x == ord('2'):
-            verification_number = get_param("Enter verification code that should have been texted to your phone")
-            verify(verification_number)
-        if x == ord('3'):
-            recipient = get_param("Enter recipient's phone number with country code eg for canada +16477798192") 
-            message = get_param("Enter message") 
-            send_message(recipient, message)
-        if x == ord('4'): 
-            check_messages()
+    # Frame the interface area at fixed VT100 size
+    global screen
+    screen = stdscr.subwin(23, 79, 0, 0)
+    screen.box()
+    screen.hline(2, 1, curses.ACS_HLINE, 77)
+    screen.refresh()
+
+    # Define the topbar menus
+    file_menu = ("Register", "register()")
+    proxy_menu = ("Verify", "verify()")
+    doit_menu = ("Send message", "send_message()")
+    help_menu = ("Check messages", "check_messages()")
+    exit_menu = ("Exit", "EXIT")
+    # Add the topbar menus to screen object
+    topbar_menu((file_menu, proxy_menu, doit_menu,
+                 help_menu, exit_menu))
+
+    # Enter the topbar menu loop
+    while topbar_key_handler():
+        draw_dict()
 
 #Initialize and call main
 if __name__=='__main__':
