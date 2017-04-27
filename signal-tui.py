@@ -1,21 +1,22 @@
 '''
-          @@\                               @@\          @@\               @@\ 
+          @@\                               @@\          @@\               @@\
           \__|                              @@ |         @@ |              \__|
- @@@@@@@\ @@\  @@@@@@\  @@@@@@@\   @@@@@@\  @@ |       @@@@@@\   @@\   @@\ @@\ 
+ @@@@@@@\ @@\  @@@@@@\  @@@@@@@\   @@@@@@\  @@ |       @@@@@@\   @@\   @@\ @@\
 @@  _____|@@ |@@  __@@\ @@  __@@\  \____@@\ @@ |@@@@@@\|_@@  _|  @@ |  @@ |@@ |
 \@@@@@@\  @@ |@@ /  @@ |@@ |  @@ | @@@@@@@ |@@ |\______\ @@ |    @@ |  @@ |@@ |
  \____@@\ @@ |@@ |  @@ |@@ |  @@ |@@  __@@ |@@ |         @@ |@@\ @@ |  @@ |@@ |
 @@@@@@@  |@@ |\@@@@@@@ |@@ |  @@ |\@@@@@@@ |@@ |         \@@@@  |\@@@@@@  |@@ |
 \_______/ \__| \____@@ |\__|  \__| \_______|\__|          \____/  \______/ \__|
-              @@\   @@ |                                                       
-              \@@@@@@  |                                                       
-               \______/     
+              @@\   @@ |
+              \@@@@@@  |
+               \______/
 
 By Eric Karnis
 This will be under gpl someday
 '''
 #!/usr/bin/env python3
 import curses, traceback, os, string
+from curses.textpad import Textbox, rectangle
 from os import system
 
 #-- Define the appearance of some interface elements
@@ -28,6 +29,13 @@ CONTINUE = 1
 
 #-- Give screen module scope
 screen = None
+
+#Define the topbar menus
+messages_menu = ("Messages", "open_messages_panel()")
+contacts_menu = ("Contacts", "open_contacts_panel()")
+settings_menu = ("Settings", "open_settings_panel()")
+exit_menu = ("Exit", "EXIT")
+menu_items = [messages_menu, contacts_menu, settings_menu, exit_menu]
 
 #helper functions
 def get_param(prompt_string):
@@ -71,7 +79,7 @@ def register():
     curses.endwin()
     execute_cmd("signal-cli -u " + username + " register")
 
-#Sned's user's verification number to Whisper Systems
+#Send's user's verification number to Whisper Systems
 def verify(verification_number):
     curses.endwin()
     #not sure why username has to be cast to string here, but not in register
@@ -88,23 +96,27 @@ def check_messages():
     curses.endwin()
     execute_cmd("signal-cli -u " + str(username) + " receive")
 
-#-- Create the topbar menu
-def topbar_menu(menus):
+##################
+#####Top Menu#####
+##################
+
+def draw_top_menu(menus):
     left = 2
     for menu in menus:
         menu_name = menu[0]
         menu_hotkey = menu_name[0]
         menu_no_hot = menu_name[1:]
-        screen.addstr(1, left, menu_hotkey, hotkey_attr)
-        screen.addstr(1, left+1, menu_no_hot, menu_attr)
-        left = left + len(menu_name) + 3
+        offset = int(curses.COLS/10 - len(menu)/2)
+        screen.addstr(1, left + offset, menu_hotkey, hotkey_attr)
+        screen.addstr(1, left + offset + 1, menu_no_hot, menu_attr)
+        left = left + int(curses.COLS/5)
         # Add key handlers for this hotkey
         topbar_key_handler((menu_hotkey.upper(), menu[1]))
         topbar_key_handler((menu_hotkey.lower(), menu[1]))
-    # Little aesthetic thing to display application title
-    screen.addstr(1, left-1,
-                  ">"*(52-left)+ " signal-tui",
-                  curses.A_STANDOUT)
+    #Display application title
+    offset = int(curses.COLS/10 - len("signal-tui"))
+    screen.addstr(1, left + offset, "signal-tui", curses.A_STANDOUT)
+    screen.hline(2, 1, curses.ACS_HLINE, curses.COLS - 3)
     screen.refresh()
 
 #-- Magic key handler both loads and processes keys strokes
@@ -134,31 +146,63 @@ def draw_dict():
     screen.addstr(17,33, str(counter), curses.A_STANDOUT)
     screen.refresh()
 
+#######################
+#### UI Functions #####
+#######################
+
+def open_messages_panel():
+    #Clear screen
+    stdscr.clear()
+    draw_top_menu(menu_items)
+    stdscr.border(0)
+    #screen.hline(int(curses.LINES*(3/4)), int(curses.COLS/4),
+    #            curses.ACS_HLINE, curses.COLS - 3)
+    screen.vline(3, int(curses.COLS/4), curses.ACS_VLINE, curses.COLS - 3)
+    stdscr.addstr(0, 0, "Enter IM message: (hit Ctrl-G to send)")
+
+    editwin = curses.newwin(int(cures.LINES*(3/4)),int(curses.COLS/4), 2,1)
+    rectangle(stdscr, 1,0, 1+5+1, 1+30+1)
+    stdscr.refresh()
+
+    box = Textbox(editwin)
+
+    # Let the user edit until Ctrl-G is struck.
+    box.edit()
+
+    # Get resulting contents
+    message = box.gather()
+    stdscr.refresh()
+    input = stdscr.getstr(10, 10, 60)
+
+
+
+
+def open_contacts_panel():
+    get_param("hi")
+
+
+def open_settings_panel():
+    get_param("hi")
 
 
 #############
-##Interface##
+####Main####
 #############
 
 def main(stdscr):
-    # Frame the interface area at fixed VT100 size
+
+    #Frame the interface area at initial terminal size
+    #BUG right now it crashes on resize
     global screen
-    screen = stdscr.subwin(23, 79, 0, 0)
+    screen = stdscr.subwin(curses.LINES - 1, curses.COLS - 1,0, 0)
     screen.box()
-    screen.hline(2, 1, curses.ACS_HLINE, 77)
     screen.refresh()
 
-    # Define the topbar menus
-    file_menu = ("Register", "register()")
-    proxy_menu = ("Verify", "verify()")
-    doit_menu = ("Send message", "send_message()")
-    help_menu = ("Check messages", "check_messages()")
-    exit_menu = ("Exit", "EXIT")
-    # Add the topbar menus to screen object
-    topbar_menu((file_menu, proxy_menu, doit_menu,
-                 help_menu, exit_menu))
+    #Prepare the screen
+    draw_top_menu(menu_items)
+    open_messages_panel()
 
-    # Enter the topbar menu loop
+    #Enter the topbar menu loop
     while topbar_key_handler():
         draw_dict()
 
@@ -177,13 +221,13 @@ if __name__=='__main__':
         # a special value like curses.KEY_LEFT will be returned
         stdscr.keypad(1)
         # Enter the main loop
-        main(stdscr)                    
+        main(stdscr)
         # Set everything back to normal
         stdscr.keypad(0)
         curses.echo()
         curses.nocbreak()
         # Terminate curses
-        curses.endwin()                 
+        curses.endwin()
 
     #If something goes wrong, restore terminal and report exception
     except:
@@ -192,4 +236,4 @@ if __name__=='__main__':
         curses.nocbreak()
         curses.endwin()
         #Print the exception
-        traceback.print_exc()           
+        traceback.print_exc()
