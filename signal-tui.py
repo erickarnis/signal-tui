@@ -132,8 +132,10 @@ def open_password_screen(password_attempts):
     screen.addstr(19, x, "              \@@@@@@  |                                         By Eric Karnis")
     screen.addstr(20, x, "               \______/ ")
 
-    if password_attempts < 3:
+    if password_attempts == 0:
         screen.addstr(23, int(curses.COLS / 2 - 7), "Enter Password")
+    elif password_attempts < 3:
+        screen.addstr(23, int(curses.COLS / 2 - 7), "Wrong Password")
     else:
         screen.addstr(25, int(curses.COLS / 2 - 7), "Too Many Attempts")
         screen.refresh()
@@ -156,6 +158,7 @@ def open_password_screen(password_attempts):
     else:
         password_attempts += 1
         open_password_screen(password_attempts)
+
 
 # TODO implement password creation, hashing, and storing
 def check_password(password):
@@ -210,7 +213,7 @@ def open_messages_panel():
     stdscr.refresh()
 
 
-def activate_editing():
+def write_message():
     curses.curs_set(True)
     # length, width, y, x
     editwin = curses.newwin(int(curses.LINES/4),
@@ -255,6 +258,8 @@ def add_message(message):
               int(curses.COLS*(1/2)),
               int(curses.LINES*(3/4)) - 3,
               curses.COLS - 3)
+    stdscr.border(0)
+    stdscr.refresh()
 
 
 def open_contacts_panel():
@@ -285,9 +290,10 @@ def main(stdscr):
         x = screen.getch()
         if x == ord("m"):
             open_messages_panel()
-
+        # TODO right now you can write a message from any tab, not just the messages tab
+        # TODO I need to change the listeners depending on the current tab
         elif x == ord("i"):
-            activate_editing()
+            write_message()
 
         elif x == ord("c"):
             open_contacts_panel()
