@@ -15,12 +15,7 @@ By Eric Karnis
 This will be under gpl someday
 '''
 # !/usr/bin/env python3
-import curses
-import traceback
-import os
-import string
-import math
-import time
+import curses, traceback, os, string, math, time
 
 from curses.textpad import Textbox, rectangle
 from os import system
@@ -35,6 +30,8 @@ CONTINUE = 1
 
 # Give screen module scope
 screen = None
+
+messages = [["s","hey"],["r","what's up?"],["s","hey"],["r","what's up?"],["s","hey"],["r","what's up?"],["s","hey"],["r","what's up?"],["s","hey"],["r","what's up?"],["s","hey"],["r","what's up?"]]
 
 # Define the topbar menus
 menu_items = ["Messages", "Contacts", "Settings", "Exit"]
@@ -155,6 +152,7 @@ def open_password_screen(password_attempts):
 
     if check_password(password):
         open_messages_panel()
+        draw_messages()
     else:
         password_attempts += 1
         open_password_screen(password_attempts)
@@ -198,15 +196,15 @@ def open_messages_panel():
     draw_top_menu()
     stdscr.border(0)
     # Top line of text area
-    screen.hline(int(curses.LINES*(3/4))-2,
+    screen.hline(messages_area_bottom_y - 2,
                  int(curses.COLS/4),
                  curses.ACS_HLINE, curses.COLS - 3)
     # right line of conversations panel
     screen.vline(3, int(curses.COLS/4), curses.ACS_VLINE, curses.COLS - 3)
-    stdscr.addstr(int(curses.LINES*(3/4)) - 2,
+    stdscr.addstr(messages_area_bottom_y - 2,
                   int(curses.COLS/4) + 1,
                   " I to enter edit mode ")
-    stdscr.addstr(int(curses.LINES*(3/4)) - 2,
+    stdscr.addstr(messages_area_bottom_y - 2,
                   curses.COLS - 17,
                   " Ctrl-G to send ")
     # rectangle(stdscr, 1,0, 7, 32)
@@ -218,7 +216,7 @@ def write_message():
     # length, width, y, x
     editwin = curses.newwin(int(curses.LINES/4),
                             int(curses.COLS*(3/4)) - 2,
-                            int(curses.LINES*(3/4)),
+                            messages_area_bottom_y,
                             int(curses.COLS/4) + 1)
     editwin.bkgdset(curses.A_STANDOUT)
     box = Textbox(editwin)
@@ -230,7 +228,7 @@ def write_message():
     message = box.gather()
 
     if message:
-        # send_message(recipient, input)
+        # if send_message(recipient, input):
         add_message(message)
 
     curses.curs_set(False)
@@ -238,29 +236,56 @@ def write_message():
 
 
 def add_message(message):
-    # TODO push other messages about the page when a new one arrives
-    # TODO have a linked list or something similar to store messages in a buffer
+
+    messages.append(["s", message])
+    draw_messages()
+
+def import_messages():
+    # TODO add a database
+    void
+
+def draw_messages():
+
+    for x in range(int(curses.COLS/4) + 1, curses.COLS - 2):
+            for y in range(3, messages_area_bottom_y - 2):
+                    stdscr.addstr(y, x, " ")
+
+
+
     message_line_len = int(curses.COLS*(1/2) - 5)
-    message_line_num = int(math.ceil(len(message)/message_line_len))
-    for x in range(0, message_line_num):
-        start_line_index = x * message_line_len
-        end_line_index = (x + 1) * message_line_len - 1
-        line = message[start_line_index: end_line_index]
-        try:
-            stdscr.addstr(int(curses.LINES*(1/2)) + x + 1,
-                          int(curses.COLS*(1/2)) + 1,
-                          line, curses.A_STANDOUT)
-        except curses.error:
-            pass
 
-    rectangle(stdscr,
-              int(curses.LINES*(1/2)),
-              int(curses.COLS*(1/2)),
-              int(curses.LINES*(3/4)) - 3,
-              curses.COLS - 3)
-    stdscr.border(0)
-    stdscr.refresh()
+    message_bottom_y = messages_area_bottom_y - 3
 
+    for message in reversed(messages):
+
+        if message[0] == "s":
+            message_box_left_x = int(curses.COLS*(1/2))
+            message_box_right_x = curses.COLS - 3
+        else:
+            message_box_left_x = int(curses.COLS*(1/4) + 2)
+            message_box_right_x = int(curses.COLS*(3/4) - 1)
+
+        message_line_num = int(math.ceil(len(message[1])/message_line_len))
+
+        for x in range(0, message_line_num):
+            start_line_index = x * message_line_len
+            end_line_index = (x + 1) * message_line_len - 1
+            line = message[1][start_line_index: end_line_index]
+            try:
+                stdscr.addstr(message_bottom_y - 2 - message_line_num + x + 1,
+                              message_box_left_x + 1,
+                              line, curses.A_STANDOUT)
+            except curses.error:
+                pass
+
+        rectangle(stdscr,
+                  message_bottom_y - 2 - message_line_num,
+                  message_box_left_x,
+                  message_bottom_y,
+                  message_box_right_x)
+        message_bottom_y = message_bottom_y - 3 - message_line_num
+        stdscr.border(0)
+        stdscr.refresh()
 
 def open_contacts_panel():
     get_param("hi")
@@ -280,6 +305,11 @@ def main(stdscr):
     screen = stdscr.subwin(curses.LINES - 1, curses.COLS - 1, 0, 0)
     screen.box()
     screen.refresh()
+
+    # UI globals
+    # Needs to be defined here to use curses
+    global messages_area_bottom_y 
+    messages_area_bottom_y = int(curses.LINES*(3/4))
 
     # Prepare the login screen
     password_attempts = 0
