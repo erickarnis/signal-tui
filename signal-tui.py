@@ -15,7 +15,12 @@ By Eric Karnis
 This will be under gpl someday
 '''
 # !/usr/bin/env python3
-import curses, traceback, os, string, math, time
+import curses
+import traceback
+import os
+import string
+import math
+import time
 
 from curses.textpad import Textbox, rectangle
 from os import system
@@ -31,7 +36,8 @@ CONTINUE = 1
 # Give screen module scope
 screen = None
 
-messages = [["s","hey"],["r","what's up?"],["s","hey"],["r","what's up?"],["s","hey"],["r","what's up?"],["s","hey"],["r","what's up?"],["s","hey"],["r","what's up?"],["s","hey"],["r","what's up?"]]
+messages = [["s", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["r","what's up?"],["s","hey"],["r", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["s","hey"],["r","what's up?"],["s","u nerd"],["r","jdflkjdlfkjsdlfjbdslfhjblsdjhfbdlsjhflsadfhlsdjfhlkjshlkfsd?"],["s","hey"],["r","what's up?"]]
+top_message_on_page_index = 0
 
 # Define the topbar menus
 menu_items = ["Messages", "Contacts", "Settings", "Exit"]
@@ -70,10 +76,14 @@ with open('user_data.txt', 'r') as file:
 if user_data:
     username = user_data[0]
 
+def erase(top_x,top_y, bottom_x, bottom_y):
+    for x in range(top_x, bottom_x):
+            for y in range(top_y, bottom_y):
+                    stdscr.addstr(y, x, " ")
+
 ##########################
 ## Signal functionality ##
 ##########################
-
 
 # Registers the user with Whisper Systems. If it works, they will send a
 # verification number to the user's phone
@@ -152,7 +162,6 @@ def open_password_screen(password_attempts):
 
     if check_password(password):
         open_messages_panel()
-        draw_messages()
     else:
         password_attempts += 1
         open_password_screen(password_attempts)
@@ -207,7 +216,7 @@ def open_messages_panel():
     stdscr.addstr(messages_area_bottom_y - 2,
                   curses.COLS - 17,
                   " Ctrl-G to send ")
-    # rectangle(stdscr, 1,0, 7, 32)
+    draw_messages()
     stdscr.refresh()
 
 
@@ -229,15 +238,15 @@ def write_message():
 
     if message:
         # if send_message(recipient, input):
-        add_message(message)
+        add_message("s", message)
 
     curses.curs_set(False)
     stdscr.refresh()
 
 
-def add_message(message):
+def add_message(originator, message):
 
-    messages.append(["s", message])
+    messages.append([originator, message])
     draw_messages()
 
 def import_messages():
@@ -246,11 +255,8 @@ def import_messages():
 
 def draw_messages():
 
-    for x in range(int(curses.COLS/4) + 1, curses.COLS - 2):
-            for y in range(3, messages_area_bottom_y - 2):
-                    stdscr.addstr(y, x, " ")
-
-
+    # clear the messages area
+    erase(int(curses.COLS/4) + 1, 3, curses.COLS - 2, messages_area_bottom_y - 2)
 
     message_line_len = int(curses.COLS*(1/2) - 5)
 
@@ -258,6 +264,8 @@ def draw_messages():
 
     for message in reversed(messages):
 
+        # Check if the message was sent or received and put the message on the left 
+        # or right respectively
         if message[0] == "s":
             message_box_left_x = int(curses.COLS*(1/2))
             message_box_right_x = curses.COLS - 3
@@ -265,7 +273,13 @@ def draw_messages():
             message_box_left_x = int(curses.COLS*(1/4) + 2)
             message_box_right_x = int(curses.COLS*(3/4) - 1)
 
+        # Write the message line by line
         message_line_num = int(math.ceil(len(message[1])/message_line_len))
+
+        # If the message does not fit on the page, stop drawing messages
+        if (message_bottom_y - 3 - message_line_num) < 3:
+            top_message_on_page_index = messages.index(message) - 1
+            break
 
         for x in range(0, message_line_num):
             start_line_index = x * message_line_len
@@ -283,7 +297,11 @@ def draw_messages():
                   message_box_left_x,
                   message_bottom_y,
                   message_box_right_x)
+
         message_bottom_y = message_bottom_y - 3 - message_line_num
+
+
+
         stdscr.border(0)
         stdscr.refresh()
 
@@ -309,7 +327,7 @@ def main(stdscr):
     # UI globals
     # Needs to be defined here to use curses
     global messages_area_bottom_y 
-    messages_area_bottom_y = int(curses.LINES*(3/4))
+    messages_area_bottom_y = int(curses.LINES*(4/5))
 
     # Prepare the login screen
     password_attempts = 0
