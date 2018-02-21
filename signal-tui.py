@@ -25,6 +25,9 @@ import time
 from curses.textpad import Textbox, rectangle
 from os import system
 
+#Signal-tui modules
+import login
+
 # Define the appearance of some interface elements
 hotkey_attr = curses.A_BOLD | curses.A_UNDERLINE
 menu_attr = curses.A_NORMAL
@@ -36,7 +39,7 @@ CONTINUE = 1
 # Give screen module scope
 screen = None
 
-messages = [["s", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["r","what's up?"],["s","hey"],["r", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["s","hey"],["r","what's up?"],["s","u nerd"],["r","jdflkjdlfkjsdlfjbdslfhjblsdjhfbdlsjhflsadfhlsdjfhlkjshlkfsd?"],["s","hey"],["r","what's up?"]]
+message_buffer = [["s", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["r","what's up?"],["s","hey"],["r", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["s","hey"],["r","what's up?"],["s","u nerd"],["r","jdflkjdlfkjsdlfjbdslfhjblsdjhfbdlsjhflsadfhlsdjfhlkjshlkfsd?"],["s","hey"],["r","pls respond"]]
 top_message_on_page_index = 0
 
 # Define the topbar menus
@@ -44,11 +47,11 @@ menu_items = ["Messages", "Contacts", "Settings", "Exit"]
 
 # helper functions
 def get_param(prompt_string):
-    stdscr.clear()
-    stdscr.border(0)
-    stdscr.addstr(2, 2, prompt_string)
-    stdscr.refresh()
-    input = stdscr.getstr(10, 10, 60)
+    screen.clear()
+    screen.border(0)
+    screen.addstr(2, 2, prompt_string)
+    screen.refresh()
+    input = screen.getstr(10, 10, 60)
     return input
 
 
@@ -79,7 +82,7 @@ if user_data:
 def erase(top_x,top_y, bottom_x, bottom_y):
     for x in range(top_x, bottom_x):
             for y in range(top_y, bottom_y):
-                    stdscr.addstr(y, x, " ")
+                    screen.addstr(y, x, " ")
 
 ##########################
 ## Signal functionality ##
@@ -118,63 +121,6 @@ def check_messages():
     curses.endwin()
     execute_cmd("signal-cli -u " + str(username) + " receive")
 
-
-#########################
-#### Password Screen ####
-#########################
-def open_password_screen(password_attempts):
-    stdscr.clear()
-
-    x = int(curses.COLS / 2 - 40)
-
-    screen.addstr(10, x, "          @@\                               @@\          @@\               @@\ ")
-    screen.addstr(11, x, "          \__|                              @@ |         @@ |              \__|")
-    screen.addstr(12, x, " @@@@@@@\ @@\  @@@@@@\  @@@@@@@\   @@@@@@\  @@ |       @@@@@@\   @@\   @@\ @@\ ")
-    screen.addstr(13, x, "@@  _____|@@ |@@  __@@\ @@  __@@\  \____@@\ @@ |@@@@@@\|_@@  _|  @@ |  @@ |@@ |")
-    screen.addstr(14, x, "\@@@@@@\  @@ |@@ /  @@ |@@ |  @@ | @@@@@@@ |@@ |\______\ @@ |    @@ |  @@ |@@ |")
-    screen.addstr(15, x, " \____@@\ @@ |@@ |  @@ |@@ |  @@ |@@  __@@ |@@ |         @@ |@@\ @@ |  @@ |@@ |")
-    screen.addstr(16, x, "@@@@@@@  |@@ |\@@@@@@@ |@@ |  @@ |\@@@@@@@ |@@ |         \@@@@  |\@@@@@@  |@@ |")
-    screen.addstr(17, x, "\_______/ \__| \____@@ |\__|  \__| \_______|\__|          \____/  \______/ \__|")
-    screen.addstr(18, x, "              @@\   @@ |")
-    screen.addstr(19, x, "              \@@@@@@  |                                         By Eric Karnis")
-    screen.addstr(20, x, "               \______/ ")
-
-    if password_attempts == 0:
-        screen.addstr(23, int(curses.COLS / 2 - 7), "Enter Password")
-    elif password_attempts < 3:
-        screen.addstr(23, int(curses.COLS / 2 - 7), "Wrong Password")
-    else:
-        screen.addstr(25, int(curses.COLS / 2 - 7), "Too Many Attempts")
-        screen.refresh()
-        time.sleep(5)
-        quit()
-
-    rectangle(stdscr, 24, int(curses.COLS / 2 - 31), 26, int(curses.COLS / 2 + 31))
-    screen.refresh()
-
-    # Get then clean up password
-    password = stdscr.getstr(25, int(curses.COLS / 2 - 30), 60)
-    password = str(password)[2:]
-    password = password[:-1]
-
-    if password:
-        screen.addstr(27, int(curses.COLS / 2 - 7), password)
-
-    if check_password(password):
-        open_messages_panel()
-    else:
-        password_attempts += 1
-        open_password_screen(password_attempts)
-
-
-# TODO implement password creation, hashing, and storing
-def check_password(password):
-    if password == "eric":
-        return True
-    else:
-        return False
-
-
 ####################
 ##### Top Menu #####
 ####################
@@ -201,23 +147,23 @@ def draw_top_menu():
 
 def open_messages_panel():
     # Clear screen
-    stdscr.clear()
+    screen.clear()
     draw_top_menu()
-    stdscr.border(0)
+    screen.border(0)
     # Top line of text area
     screen.hline(messages_area_bottom_y - 2,
                  int(curses.COLS/4),
                  curses.ACS_HLINE, curses.COLS - 3)
     # right line of conversations panel
     screen.vline(3, int(curses.COLS/4), curses.ACS_VLINE, curses.COLS - 3)
-    stdscr.addstr(messages_area_bottom_y - 2,
+    screen.addstr(messages_area_bottom_y - 2,
                   int(curses.COLS/4) + 1,
                   " I to enter edit mode ")
-    stdscr.addstr(messages_area_bottom_y - 2,
+    screen.addstr(messages_area_bottom_y - 2,
                   curses.COLS - 17,
                   " Ctrl-G to send ")
     draw_messages()
-    stdscr.refresh()
+    screen.refresh()
 
 
 def write_message():
@@ -241,12 +187,12 @@ def write_message():
         add_message("s", message)
 
     curses.curs_set(False)
-    stdscr.refresh()
+    screen.refresh()
 
 
 def add_message(originator, message):
-
-    messages.append([originator, message])
+    # TODO: write the message to a database here
+    message_buffer.append([originator, message])
     draw_messages()
 
 def import_messages():
@@ -262,7 +208,7 @@ def draw_messages():
 
     message_bottom_y = messages_area_bottom_y - 3
 
-    for message in reversed(messages):
+    for message in reversed(message_buffer):
 
         # Check if the message was sent or received and put the message on the left 
         # or right respectively
@@ -277,8 +223,10 @@ def draw_messages():
         message_line_num = int(math.ceil(len(message[1])/message_line_len))
 
         # If the message does not fit on the page, stop drawing messages
+        # and print more above at the top
         if (message_bottom_y - 3 - message_line_num) < 3:
-            top_message_on_page_index = messages.index(message) - 1
+            top_message_on_page_index = message_buffer.index(message) - 1
+            screen.addstr(5, int(5*curses.COLS/8) - 5, "more above")
             break
 
         for x in range(0, message_line_num):
@@ -286,13 +234,13 @@ def draw_messages():
             end_line_index = (x + 1) * message_line_len - 1
             line = message[1][start_line_index: end_line_index]
             try:
-                stdscr.addstr(message_bottom_y - 2 - message_line_num + x + 1,
+                screen.addstr(message_bottom_y - 2 - message_line_num + x + 1,
                               message_box_left_x + 1,
                               line, curses.A_STANDOUT)
             except curses.error:
                 pass
 
-        rectangle(stdscr,
+        rectangle(screen,
                   message_bottom_y - 2 - message_line_num,
                   message_box_left_x,
                   message_bottom_y,
@@ -302,8 +250,8 @@ def draw_messages():
 
 
 
-        stdscr.border(0)
-        stdscr.refresh()
+        screen.border(0)
+        screen.refresh()
 
 def open_contacts_panel():
     get_param("hi")
@@ -320,7 +268,7 @@ def open_settings_panel():
 def main(stdscr):
 
     global screen
-    screen = stdscr.subwin(curses.LINES - 1, curses.COLS - 1, 0, 0)
+    screen = stdscr
     screen.box()
     screen.refresh()
 
@@ -331,7 +279,9 @@ def main(stdscr):
 
     # Prepare the login screen
     password_attempts = 0
-    open_password_screen(password_attempts)
+    if login.open_login_screen(screen, password_attempts):
+            open_messages_panel()
+
     curses.curs_set(False)
     x = 0
     while x != ord("e"):
@@ -342,6 +292,15 @@ def main(stdscr):
         # TODO I need to change the listeners depending on the current tab
         elif x == ord("i"):
             write_message()
+
+        #elif ( x == ord("\t"):
+            #open_next_conversation()
+
+        elif x == curses.KEY_PPAGE:
+            next_message_page()
+
+        elif x == curses.KEY_NPAGE:
+            previous_message_page()
 
         elif x == ord("c"):
             open_contacts_panel()
