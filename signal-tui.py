@@ -44,40 +44,6 @@ screen = None
 # Define the topbar menus
 menu_items = ["Messages", "Contacts", "Settings", "Exit"]
 
-# helper functions
-def get_param(prompt_string):
-    screen.clear()
-    screen.border(0)
-    screen.addstr(2, 2, prompt_string)
-    screen.refresh()
-    input = screen.getstr(10, 10, 60)
-    return input
-
-
-def execute_cmd(cmd_string):
-    system("clear")
-    a = system(cmd_string)
-
-    print("")
-    if a == 0:
-        print("Command executed correctly")
-    else:
-        print("Command terminated with error")
-    raw_input("Press enter")
-    print("")
-
-
-def file_is_empty(path):
-    return os.stat(path).st_size == 0
-
-
-# prepare username and user data file
-with open('user_data.txt', 'r') as file:
-    user_data = file.readlines()
-
-if user_data:
-    username = user_data[0]
-
 
 ####################
 ##### Top Menu #####
@@ -97,18 +63,6 @@ def draw_top_menu():
     screen.addstr(1, left + offset, "signal-tui", curses.A_STANDOUT)
     screen.hline(2, 1, curses.ACS_HLINE, curses.COLS - 3)
     screen.refresh()
-
-
-###########################
-#### Hotkey Functions #####
-###########################
-
-def open_contacts_panel():
-    get_param("hi")
-
-
-def open_settings_panel():
-    get_param("hi")
 
 
 ##############
@@ -144,12 +98,12 @@ def main(stdscr):
         # TODO I need to change the listeners depending on the current tab
         elif x == ord("i"):
             messages.write_message()
-            
+
         elif x == ord("c"):
-            open_contacts_panel()
+            quit()
 
         elif x == ord("s"):
-            open_settings_panel()
+            quit()
         '''
         elif x == ord("\t"):
             messages.open_next_conversation()
@@ -160,8 +114,6 @@ def main(stdscr):
         elif x == curses.KEY_NPAGE:
             messages.previous_message_page()
         '''
-
-
 
 
 # Initialize and call main
