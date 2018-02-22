@@ -25,10 +25,11 @@ import time
 from curses.textpad import Textbox, rectangle
 from os import system
 
+screen = None
+
 top_message_on_page_index = 0
 message_buffer = []
 messages_area_bottom_y = 0
-screen = None
 
 def open_messages_panel(sn, m_area_bottom_y):
     global screen, messages_area_bottom_y
@@ -105,11 +106,13 @@ def draw_messages():
         if message[0] == "s":
             message_box_left_x = int(curses.COLS*(1/2))
             message_box_right_x = curses.COLS - 3
-        else:
+        elif message[0] == "r":
             message_box_left_x = int(curses.COLS*(1/4) + 2)
             message_box_right_x = int(curses.COLS*(3/4) - 1)
+        else:
+            quit("Incorrect Sent/Recieved code in buffer")
 
-        # Write the message line by line
+        # Calculate the length of a line that can fit in a message box
         message_line_num = int(math.ceil(len(message[1])/message_line_len))
 
         # If the message does not fit on the page, stop drawing messages
@@ -137,8 +140,6 @@ def draw_messages():
                   message_box_right_x)
 
         message_bottom_y = message_bottom_y - 3 - message_line_num
-
-
 
         screen.border(0)
         screen.refresh()

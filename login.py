@@ -69,7 +69,7 @@ def open_login_screen(screen, password_attempts):
 
 # TODO implement password creation, hashing, and storing
 def check_password(password):
-    if password == "eric":
+    if password == "e":
         return True
     else:
         return False

@@ -28,6 +28,7 @@ from os import system
 #Signal-tui modules
 import login
 import messages
+import contacts
 import signal
 
 # Define the appearance of some interface elements
@@ -85,6 +86,8 @@ def main(stdscr):
         draw_top_menu()
         screen.border(0)
         messages.import_messages()
+        contacts.import_contacts(screen)
+        contacts.draw_conversations_list()
         messages.open_messages_panel(screen, messages_area_bottom_y)
 
 
@@ -104,6 +107,8 @@ def main(stdscr):
 
         elif x == ord("s"):
             quit()
+
+        # TODO the below keys cannot be read for some reason
         '''
         elif x == ord("\t"):
             messages.open_next_conversation()
