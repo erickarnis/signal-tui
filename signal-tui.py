@@ -45,6 +45,12 @@ screen = None
 # Define the topbar menus
 menu_items = ["Messages", "Contacts", "Settings", "Exit"]
 
+# variables that define the state of the program
+current_screen = "login"
+current_conversation = 0
+contact_buffer = []
+message_buffer = []
+
 
 ####################
 ##### Top Menu #####
@@ -72,53 +78,73 @@ def draw_top_menu():
 
 def main(stdscr):
 
-    global screen
+    global screen, contact_buffer, message_buffer, current_conversation
     screen = stdscr
     screen.box()
     screen.refresh()
 
     messages_area_bottom_y = int(curses.LINES*(4/5))
 
-    # Prepare the login screen
+    # Start the program
     password_attempts = 0
     if login.open_login_screen(screen, password_attempts):
         screen.clear()
         draw_top_menu()
         screen.border(0)
-        messages.import_messages()
-        contacts.import_contacts(screen)
-        contacts.draw_conversations_list()
+        contact_buffer = contacts.import_contacts(screen)
+        message_buffer = messages.import_messages()
+        contacts.draw_conversations_list(current_conversation)
         messages.open_messages_panel(screen, messages_area_bottom_y)
+        current_screen = "messages"
 
 
     curses.curs_set(False)
+
+    # This loop controls the hotkeys. Pressing e will exit the loop and the program
     x = 0
     while x != ord("e"):
+        #global current_conversation
         x = screen.getch()
+
+        # These hotkeys should be available from every screen
         if x == ord("m"):
             messages.open_messages_panel(screen, messages_area_bottom_y)
-        # TODO right now you can write a message from any tab, not just the messages tab
-        # TODO I need to change the listeners depending on the current tab
-        elif x == ord("i"):
-            messages.write_message()
+            current_screen == "messages"
 
         elif x == ord("c"):
-            quit()
+            current_screen == "contacts"
+            quit("contacts")
 
         elif x == ord("s"):
-            quit()
+            v == "settings"
+            quit("settings")
 
-        # TODO the below keys cannot be read for some reason
-        '''
-        elif x == ord("\t"):
-            messages.open_next_conversation()
+        if current_screen == "messages":
+            if x == ord("i"):
+                messages.write_message(current_conversation)
+            elif x == ord("k"):
+                if current_conversation != 6:
+                    current_conversation += 1
+                    contacts.draw_conversations_list(current_conversation)
+                    messages.draw_messages(current_conversation)
 
-        elif x == curses.KEY_PPAGE:
-            messages.next_message_page()
+            elif x == ord("l"):
+                if current_conversation != 0:
+                    current_conversation -= 1
+                    contacts.draw_conversations_list(current_conversation)
+                    messages.draw_messages(current_conversation)
 
-        elif x == curses.KEY_NPAGE:
-            messages.previous_message_page()
-        '''
+            # TODO the below keys cannot be read for some reason
+            '''
+            elif x == ord("\t"):
+                messages.open_next_conversation()
+
+            elif x == curses.KEY_PPAGE:
+                messages.next_message_page()
+
+            elif x == curses.KEY_NPAGE:
+                messages.previous_message_page()
+            '''
 
 
 # Initialize and call main
