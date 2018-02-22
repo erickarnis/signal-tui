@@ -57,7 +57,8 @@ message_buffer = []
 ####################
 
 def draw_top_menu():
-    left = 2
+    left = 6
+
     for menu_name in menu_items:
         menu_hotkey = menu_name[0]
         menu_no_hot = menu_name[1:]
@@ -65,10 +66,13 @@ def draw_top_menu():
         screen.addstr(1, left + offset, menu_hotkey, hotkey_attr)
         screen.addstr(1, left + offset + 1, menu_no_hot, menu_attr)
         left = left + int(curses.COLS/5)
+
     # Draw application title
-    offset = int(curses.COLS/10 - len("signal-tui"))
-    screen.addstr(1, left + offset, "signal-tui", curses.A_STANDOUT)
+    offset = int(curses.COLS - len("signal-tui"))
+    screen.addstr(1, offset - 3, "signal-tui", curses.A_STANDOUT)
+
     screen.hline(2, 1, curses.ACS_HLINE, curses.COLS - 3)
+
     screen.refresh()
 
 
@@ -96,7 +100,6 @@ def main(stdscr):
         contacts.draw_conversations_list(current_conversation)
         messages.open_messages_panel(screen, messages_area_bottom_y)
         current_screen = "messages"
-
 
     curses.curs_set(False)
 

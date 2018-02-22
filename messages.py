@@ -132,7 +132,7 @@ def draw_messages(current_conversation):
         # and print more above at the top
         if (message_bottom_y - 3 - message_line_num) < 3:
             top_message_on_page_index = message_buffer[current_conversation].index(message) - 1
-            screen.addstr(5, int(5*curses.COLS/8) - 5, "more above")
+            screen.addstr(4, int(5*curses.COLS/8) - 5, "more above")
             break
 
         for x in range(0, message_line_num):
