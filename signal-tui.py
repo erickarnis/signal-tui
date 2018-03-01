@@ -47,7 +47,10 @@ menu_items = ["Messages", "Contacts", "Settings", "Exit"]
 
 # variables that define the state of the program
 current_screen = "login"
+
 current_conversation = 0
+total_conversations = 6
+
 contact_buffer = []
 message_buffer = []
 
@@ -71,7 +74,8 @@ def draw_top_menu():
     offset = int(curses.COLS - len("signal-tui"))
     screen.addstr(1, offset - 3, "signal-tui", curses.A_STANDOUT)
 
-    screen.hline(2, 1, curses.ACS_HLINE, curses.COLS - 3)
+    #bottom line of menu area
+    screen.hline(2, 2, curses.ACS_HLINE, curses.COLS - 4)
 
     screen.refresh()
 
@@ -87,8 +91,6 @@ def main(stdscr):
     screen.box()
     screen.refresh()
 
-    messages_area_bottom_y = int(curses.LINES*(4/5))
-
     # Start the program
     password_attempts = 0
     if login.open_login_screen(screen, password_attempts):
@@ -98,7 +100,7 @@ def main(stdscr):
         contact_buffer = contacts.import_contacts(screen)
         message_buffer = messages.import_messages()
         contacts.draw_conversations_list(current_conversation)
-        messages.open_messages_panel(screen, messages_area_bottom_y)
+        messages.open_messages_panel(screen, 0)
         current_screen = "messages"
 
     curses.curs_set(False)
@@ -119,35 +121,30 @@ def main(stdscr):
             quit("contacts")
 
         elif x == ord("s"):
-            v == "settings"
+            current_screen == "settings"
             quit("settings")
 
         if current_screen == "messages":
             if x == ord("i"):
                 messages.write_message(current_conversation)
-            elif x == ord("k"):
-                if current_conversation != 6:
+                
+            elif x == ord("h"):
+                if current_conversation != total_conversations:
                     current_conversation += 1
                     contacts.draw_conversations_list(current_conversation)
-                    messages.draw_messages(current_conversation)
+                    messages.open_messages_panel(screen, current_conversation)
+
+            elif x == ord("j"):
+                messages.page_down(current_conversation)
+
+            elif x == ord("k"):
+                messages.page_up(current_conversation)
 
             elif x == ord("l"):
                 if current_conversation != 0:
                     current_conversation -= 1
                     contacts.draw_conversations_list(current_conversation)
-                    messages.draw_messages(current_conversation)
-
-            # TODO the below keys cannot be read for some reason
-            '''
-            elif x == ord("\t"):
-                messages.open_next_conversation()
-
-            elif x == curses.KEY_PPAGE:
-                messages.next_message_page()
-
-            elif x == curses.KEY_NPAGE:
-                messages.previous_message_page()
-            '''
+                    messages.open_messages_panel(screen, current_conversation)
 
 
 # Initialize and call main

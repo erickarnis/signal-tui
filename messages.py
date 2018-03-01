@@ -27,14 +27,18 @@ from os import system
 
 screen = None
 
-top_message_on_page_index = 0
 message_buffer = []
+page_index = [0]
+current_page = 0
 messages_area_bottom_y = 0
 
-def open_messages_panel(sn, m_area_bottom_y):
-    global screen, messages_area_bottom_y
+def open_messages_panel(sn, current_conversation):
+    global screen, messages_area_bottom_y, current_page
+
     screen = sn
-    messages_area_bottom_y = m_area_bottom_y
+    messages_area_bottom_y = int(curses.LINES*(4/5))
+    current_page = 0
+
     # Top line of text area
     screen.hline(messages_area_bottom_y - 2,
                  int(curses.COLS/4),
@@ -47,8 +51,11 @@ def open_messages_panel(sn, m_area_bottom_y):
     screen.addstr(messages_area_bottom_y - 2,
                   curses.COLS - 17,
                   " Ctrl-G to send ")
-    draw_messages(0)
+
+    refresh_page_index(current_conversation)
+    draw_messages(current_conversation)
     screen.refresh()
+
 
 
 def write_message(current_conversation):
@@ -78,6 +85,8 @@ def write_message(current_conversation):
 def add_message(current_conversation, originator, message):
     # TODO: write the message to a database here
     message_buffer[current_conversation].append([originator, message])
+
+    refresh_page_index(current_conversation)
     draw_messages(current_conversation)
 
 def erase(top_x,top_y, bottom_x, bottom_y):
@@ -89,8 +98,8 @@ def import_messages():
     # TODO add a database
     global message_buffer
     message_buffer = [
-    [["s", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["r","what's up?"],["s","hey"],["r", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["s","hey"],["r","what's up?"],["s","u nerd"],["r","jdflkjdlfkjsdlfjbdslfhjblsdjhfbdlsjhflsadfhlsdjfhlkjshlkfsd?"],["s","hey"],["r","pls respond"]],
-    [["s", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["r","what's up?"],["s","hey"],["r", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["s","hey"],["r","what's up?"],["s","u dork"],["r","jdflkjdlfkjsdlfjbdslfhjblsdjhfbdlsjhflsadfhlsdjfhlkjshlkfsd?"],["s","hey"],["r","pls respond"]],
+    [["s", "Sed vitae magna non eros luctus viverra."],["r","Vivamus ullamcorper gravida augue, ut fermentum enim aliquet sit amet."],["s","Fusce libero ipsum, feugiat nec libero at, placerat rhoncus dui."],["r", "Etiam elit erat, luctus accumsan felis ut, finibus sollicitudin metus.bus."],["r","Vivamus ornare commodo tellus in vestibulum."],["s","Interdum et malesuada fames ac ante ipsum primis in faucibus. Praesent et sollicitudin massa."],["r","jdflkjdlfkjsdlfjbdslfhjblsdjhfbdlsjhflsadfhlsdjfhlkjshlkfsd?"],["s"," Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam imperdiet, felis a euismod rhoncus, dui nibh lobortis leo, auctor fringilla eros nisl nec eros."],["r","Curabitur ut blandit diam, eget rhoncus arcu."],["s", "Maecenas feugiat dolor nibh, nec pharetra leo auctor ut. Duis sagittis maximus eros, vitae aliquam elit luctus a. Ut sed orci eget arcu efficitur tempor. Aenean pulvinar fermentum leo et suscipit. Duis semper eros sit amet porta interdum. "],["r","what's up?"],["s","hey"],["r", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["s","hey"],["r","what's up?"],["s","u nerd"],["r","jdflkjdlfkjsdlfjbdslfhjblsdjhfbdlsjhflsadfhlsdjfhlkjshlkfsd?"],["s","hey"],["r","pls respond"]],
+    [["s", "18"],["r","17"],["s","16"],["r", "15"],["s","14"],["r","13"],["s","12"],["r","11"],["s","10"],["r","9"],["s", "8"],["r","7"],["r", "6"],["s","5"],["r","4"],["s","3"],["r","2"],["s","1"],["r","0"]],
     [["s", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["r","what's up?"],["s","hey"],["r", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["s","hey"],["r","what's up?"],["s","u loser"],["r","jdflkjdlfkjsdlfjbdslfhjblsdjhfbdlsjhflsadfhlsdjfhlkjshlkfsd?"],["s","hey"],["r","pls respond"]],
     [["s", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["r","what's up?"],["s","hey"],["r", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["s","hey"],["r","what's up?"],["s","u dum dum"],["r","jdflkjdlfkjsdlfjbdslfhjblsdjhfbdlsjhflsadfhlsdjfhlkjshlkfsd?"],["s","hey"],["r","pls respond"]],
     [["s", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["r","what's up?"],["s","hey"],["r", "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50."],["s","hey"],["r","what's up?"],["s","u baby"],["r","jdflkjdlfkjsdlfjbdslfhjblsdjhfbdlsjhflsadfhlsdjfhlkjshlkfsd?"],["s","hey"],["r","pls respond"]],
@@ -105,14 +114,21 @@ def import_messages():
 # TODO: around for a while and if anyone can help I would appreciate it.
 def draw_messages(current_conversation):
 
-    # clear the messages area
+    # clear the messages area, ie the space to the left of the contacts panel and above the 
+    # message writing panel
     erase(int(curses.COLS/4) + 1, 3, curses.COLS - 2, messages_area_bottom_y - 2)
 
     message_line_len = int(curses.COLS*(1/2) - 5)
 
+    reversed_message = message_buffer[current_conversation][::-1]
+
     message_bottom_y = messages_area_bottom_y - 3
 
-    for message in reversed(message_buffer[current_conversation]):
+    if current_page > 0:
+        screen.addstr(messages_area_bottom_y - 3, int(5*curses.COLS/8) - 5, "more below")
+        message_bottom_y -= 1
+
+    for message in reversed_message[page_index[current_page]:]:
 
         # Check if the message was sent or received and put the message on the left 
         # or right respectively
@@ -125,13 +141,14 @@ def draw_messages(current_conversation):
         else:
             quit("Incorrect Sent/Recieved code in buffer")
 
-        # Calculate the length of a line that can fit in a message box
+        # Calculate the number of lines in the message
         message_line_num = int(math.ceil(len(message[1])/message_line_len))
 
         # If the message does not fit on the page, stop drawing messages
-        # and print more above at the top
+        # and print "more above" at the top
         if (message_bottom_y - 3 - message_line_num) < 3:
-            top_message_on_page_index = message_buffer[current_conversation].index(message) - 1
+            global top_message
+            top_message = reversed_message.index(message)
             screen.addstr(4, int(5*curses.COLS/8) - 5, "more above")
             break
 
@@ -154,5 +171,44 @@ def draw_messages(current_conversation):
 
         message_bottom_y = message_bottom_y - 3 - message_line_num
 
-        screen.border(0)
-        screen.refresh()
+    screen.border(0)
+    screen.refresh()
+
+def page_down(current_conversation):
+    global current_page
+    if current_page != 0: 
+        current_page -=1
+        draw_messages(current_conversation)
+
+def page_up(current_conversation):
+    global current_page
+    if current_page != page_index.index(page_index[-1]): 
+        current_page += 1
+        draw_messages(current_conversation)
+
+
+def refresh_page_index(current_conversation):
+    global page_index
+
+    page_index = [0]
+
+    message_line_len = int(curses.COLS*(1/2) - 5)
+
+    message_bottom_y = messages_area_bottom_y - 3
+
+    reversed_message = message_buffer[current_conversation][::-1]
+
+    for message in reversed_message:
+
+        # Calculate the number of lines in the message
+        message_line_num = int(math.ceil(len(message[1])/message_line_len))
+
+        if (message_bottom_y - 3 - message_line_num) < 3:
+            # append the index of the bottom message of the new page by adding 1 to 
+            # the index of the top message of the last page
+            page_index.append(reversed_message.index(message))
+            message_bottom_y = messages_area_bottom_y - 3
+
+        message_bottom_y = message_bottom_y - 3 - message_line_num
+
+
