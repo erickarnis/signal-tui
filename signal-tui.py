@@ -54,6 +54,11 @@ total_conversations = 6
 contact_buffer = []
 message_buffer = []
 
+def erase(top_x,top_y, bottom_x, bottom_y):
+    for x in range(top_x, bottom_x):
+            for y in range(top_y, bottom_y):
+                    screen.addstr(y, x, " ")
+
 
 ####################
 ##### Top Menu #####
@@ -92,15 +97,13 @@ def main(stdscr):
     screen.refresh()
 
     # Start the program
-    password_attempts = 0
-    if login.open_login_screen(screen, password_attempts):
+    if login.open_login_screen(screen, 0):
         screen.clear()
         draw_top_menu()
         screen.border(0)
         contact_buffer = contacts.import_contacts(screen)
         message_buffer = messages.import_messages()
-        contacts.draw_conversations_list(current_conversation)
-        messages.open_messages_panel(screen, 0)
+        messages.open_messages_screen(screen, 0, contact_buffer)
         current_screen = "messages"
 
     curses.curs_set(False)
@@ -113,15 +116,18 @@ def main(stdscr):
 
         # These hotkeys should be available from every screen
         if x == ord("m"):
-            messages.open_messages_panel(screen, messages_area_bottom_y)
+            erase(1, 3, curses.COLS - 1, curses.LINES - 1)
+            messages.open_messages_screen(screen, current_conversation, contact_buffer)
             current_screen == "messages"
 
         elif x == ord("c"):
             current_screen == "contacts"
-            quit("contacts")
+            erase(1, 3, curses.COLS - 1, curses.LINES - 1)
+            contacts.open_contacts_screen(screen)
 
         elif x == ord("s"):
             current_screen == "settings"
+            erase(1, 3, curses.COLS - 1, curses.LINES - 1)
             quit("settings")
 
         if current_screen == "messages":
@@ -129,10 +135,9 @@ def main(stdscr):
                 messages.write_message(current_conversation)
                 
             elif x == ord("h"):
-                if current_conversation != total_conversations:
+                if current_conversation != len(contact_buffer) - 1:
                     current_conversation += 1
-                    contacts.draw_conversations_list(current_conversation)
-                    messages.open_messages_panel(screen, current_conversation)
+                    messages.open_messages_screen(screen, current_conversation, contact_buffer)
 
             elif x == ord("j"):
                 messages.page_down(current_conversation)
@@ -143,8 +148,7 @@ def main(stdscr):
             elif x == ord("l"):
                 if current_conversation != 0:
                     current_conversation -= 1
-                    contacts.draw_conversations_list(current_conversation)
-                    messages.open_messages_panel(screen, current_conversation)
+                    messages.open_messages_screen(screen, current_conversation, contact_buffer)
 
 
 # Initialize and call main
