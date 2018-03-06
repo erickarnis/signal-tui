@@ -50,7 +50,7 @@ def open_login_screen(screen, password_attempts):
         screen.addstr(25, int(curses.COLS / 2 - 7), "Too Many Attempts")
         screen.refresh()
         time.sleep(5)
-        quit("Too Many Password Attempts")
+        quit("\033[1m" + "Too Many Password Attempts" + "\033[1m")
 
     rectangle(screen, 24, int(curses.COLS / 2 - 31), 26, int(curses.COLS / 2 + 31))
     screen.refresh()

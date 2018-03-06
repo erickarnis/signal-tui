@@ -184,12 +184,9 @@ def draw_messages(current_conversation):
             start_line_index = x * line_len
             end_line_index = (x + 1) * line_len - 1
             line = message[1][start_line_index: end_line_index]
-            try:
-                screen.addstr(message_bottom_y - 2 - line_num + x + 1,
+            screen.addstr(message_bottom_y - 2 - line_num + x + 1,
                               left_x + 1,
                               line, curses.A_STANDOUT)
-            except curses.error:
-                pass
 
         rectangle(screen,
                   message_bottom_y - 2 - line_num,
@@ -224,7 +221,10 @@ def refresh_page_index(current_conversation):
 
     message_bottom_y = messages_area_bottom_y - 3
 
-    reversed_message = message_buffer[current_conversation][::-1]
+    try:
+        reversed_message = message_buffer[current_conversation][::-1]
+    except IndexError:
+        quit("\033[1m" + "Not enough entries in message_buffer for all of the contacts" + "\033[1m")
 
     for message in reversed_message:
 

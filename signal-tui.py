@@ -91,7 +91,7 @@ def draw_top_menu():
 
 def main(stdscr):
 
-    global screen, contact_buffer, message_buffer, current_conversation
+    global screen, contact_buffer, message_buffer, current_conversation, current_screen
     screen = stdscr
     screen.box()
     screen.refresh()
@@ -118,15 +118,15 @@ def main(stdscr):
         if x == ord("m"):
             erase(1, 3, curses.COLS - 1, curses.LINES - 1)
             messages.open_messages_screen(screen, current_conversation, contact_buffer)
-            current_screen == "messages"
+            current_screen = "messages"
 
         elif x == ord("c"):
-            current_screen == "contacts"
+            current_screen = "contacts"
             erase(1, 3, curses.COLS - 1, curses.LINES - 1)
             contacts.open_contacts_screen(screen)
 
         elif x == ord("s"):
-            current_screen == "settings"
+            current_screen = "settings"
             erase(1, 3, curses.COLS - 1, curses.LINES - 1)
             quit("settings")
 
@@ -149,9 +149,23 @@ def main(stdscr):
                 if current_conversation != 0:
                     current_conversation -= 1
                     messages.open_messages_screen(screen, current_conversation, contact_buffer)
+                    
+        elif current_screen == "contacts":
+            if x == ord("i"):
+                contacts.edit_contact()
+                
+            elif x == ord("h"):
+                contacts.left()
 
+            elif x == ord("j"):
+                contacts.down()
 
-# Initialize and call main
+            elif x == ord("k"):
+                contacts.up()
+
+            elif x == ord("l"):
+                contacts.right()
+
 if __name__ == '__main__':
     try:
         # Initialize curses
