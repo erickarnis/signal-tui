@@ -149,10 +149,13 @@ def main(stdscr):
                 if current_conversation != 0:
                     current_conversation -= 1
                     messages.open_messages_screen(screen, current_conversation, contact_buffer)
-                    
+
         elif current_screen == "contacts":
             if x == ord("i"):
                 contacts.edit_contact()
+
+            elif x == ord("a"):
+                contacts.add_contact()
                 
             elif x == ord("h"):
                 contacts.left()

@@ -56,40 +56,59 @@ def erase(top_x,top_y, bottom_x, bottom_y):
             for y in range(top_y, bottom_y):
                     screen.addstr(y, x, " ")
 
+    screen.refresh()
+   
+
 def draw_contacts(name_highlighted):
     erase(1, 3, curses.COLS - 1, curses.LINES - 1)
 
-    top_y = 4
-    bottom_y = int(curses.COLS/6)
-    left_x = 1
-    right_x = int(curses.COLS/4)
+    x_increment = int((curses.COLS - 4)/4)
+    y_increment = int((curses.LINES - 4)/4)
+
+    top_y = 5
+    bottom_y = y_increment
+    left_x = 4
+    right_x = x_increment
+
+
+    screen.addstr(3, 3, "A to add")
+
+    screen.addstr(3, curses.COLS - len("I to edit") - 3, "I to edit")
 
     for contact in contact_buffer[first_contact_on_page:]:
 
+        # if selected
         if contact_buffer.index(contact) == name_highlighted:
             screen.addstr(top_y + 2, left_x + 2, contact[1][:right_x - left_x - 2], curses.A_STANDOUT)
+            screen.addstr(top_y + 3, left_x + 2, str(contact[0]), curses.A_NORMAL)
 
+        # if unselected
         else: 
             screen.addstr(top_y + 2, left_x + 2, contact[1][:right_x - left_x - 2], curses.A_NORMAL)
+            screen.addstr(top_y + 3, left_x + 2, str(contact[0]), curses.A_NORMAL)
 
         rectangle(screen, top_y, left_x, bottom_y, right_x)
 
 
-        left_x += int(curses.COLS/4)
-        right_x += int(curses.COLS/4)
+        left_x += x_increment
+        right_x += x_increment
 
-        if right_x > curses.COLS: 
-            top_y += int(curses.COLS/6) - 2
-            bottom_y += int(curses.COLS/6) - 2
-            left_x = 2
-            right_x = int(curses.COLS/4)
+        # if end of row start next row
+        if right_x > curses.COLS - 3: 
+            top_y += y_increment
+            bottom_y += y_increment
+            left_x = 4
+            right_x = x_increment
 
         if first_contact_on_page != 0:
             screen.addstr(3, int(curses.COLS/2) - 5, "more above")
 
-        if bottom_y > curses.LINES - 2:
-            screen.addstr(top_y, int(curses.COLS/2) - 5, "more below")
+        #if end of page stop
+        if bottom_y > curses.LINES - 3:
+            screen.addstr(curses.LINES - 2, int(curses.COLS/2) - 5, "more below")
             break
+
+# TODO: these only works properly for a 4x4 grid of contacts
 
 def left():
     global contact_highlighted, first_contact_on_page
@@ -138,4 +157,86 @@ def right():
             contact_highlighted += 1
             first_contact_on_page += 16
             draw_contacts(contact_highlighted)   
+
+def edit_contact():
+
+    entry = contact_highlighted % 16
+
+    if 0 <= entry <= 3:
+        top_y = 5
+        bottom_y = int((curses.LINES - 4)/4)
+
+    elif 4 <= entry <= 7:
+        top_y = 5 + int((curses.LINES - 4)/4)
+        bottom_y = 2 * int((curses.LINES - 4)/4)
+
+    elif 8 <= entry <= 11:
+        top_y = 5 + 2 * int((curses.LINES - 4)/4)
+        bottom_y = 3 * int((curses.LINES - 4)/4)
+
+    elif 12 <= entry <= 15:
+        top_y = 5 + 3 * int((curses.LINES - 4)/4)
+        bottom_y = 4 * int((curses.LINES - 4)/4)
+
+    if entry % 4 == 0:
+        left_x = 4
+        right_x = int((curses.COLS - 4)/4)
+
+    elif (entry - 1) % 4 == 0:
+        left_x = 4 + int((curses.COLS - 4)/4)
+        right_x = 2 * int((curses.COLS - 4)/4)
+
+    elif (entry - 2) % 4 == 0:
+        left_x = 4 + 2 * int((curses.COLS - 4)/4)
+        right_x = 3 * int((curses.COLS - 4)/4)
+
+    elif (entry - 3) % 4 == 0:
+        left_x = 4 + 3 * int((curses.COLS - 4)/4)
+        right_x = 4 * int((curses.COLS - 4)/4)
+
+    erase(left_x + 1, top_y + 1, right_x, bottom_y)
+
+    screen.addstr(top_y + 2, left_x + 2, "Name")
+    screen.addstr(top_y + 6, left_x + 2, "Number")
+    rectangle(screen, top_y + 3, left_x + 2, top_y + 5, right_x - 2)
+    rectangle(screen, top_y + 7, left_x + 2, top_y + 9, right_x - 2)
+
+    screen.refresh()
+
+    new_name = add_text_box(1, int((curses.COLS - 4)/4) - 9, top_y + 4, left_x + 3)
+    # BUG: mystery blinking cursor appears near bottom of screen after this line is executed
+    new_number = add_text_box(1, int((curses.COLS - 4)/4) - 9, top_y + 8, left_x + 3)
+
+    # TODO: write name and number to database
+    contact_buffer[contact_highlighted][0] = new_number
+    contact_buffer[contact_highlighted][1] = new_name
+
+    draw_contacts(contact_highlighted)
+
+
+def add_text_box(height, width, top_y, left_x):
+    
+    curses.curs_set(True)
+    # height, width, top_y, top_x
+    editwin = curses.newwin(height, width, top_y, left_x)
+    editwin.bkgdset(curses.A_STANDOUT)
+    box = Textbox(editwin)
+    box.stripspaces = True
+    # Let the user edit until Ctrl-G is struck.
+    box.edit()
+
+    # Get resulting contents
+    message = box.gather()
+
+    if message: return message
+
+    curses.curs_set(False)
+
+def add_contact():
+    erase(1, 3, curses.COLS - 1, curses.LINES - 1)
+
+    rectangle(screen, int(curses.LINES/5), int(curses.COLS/4), int(3 * curses.LINES/4), int(3 * curses.COLS/4))
+
+    screen.addstr(int(curses.LINES/5) + 3, int(curses.COLS/4) + 3, "Name:")
+    screen.addstr(int(curses.LINES/5) + 5, int(curses.COLS/4) + 3, "Number:")
 

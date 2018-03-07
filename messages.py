@@ -49,7 +49,7 @@ def open_messages_screen(sn, current_conversation, contact_buffer):
     screen.vline(3, int(curses.COLS/4), curses.ACS_VLINE, curses.COLS - 3)
     screen.addstr(messages_area_bottom_y - 2,
                   int(curses.COLS/4) + 1,
-                  " I to enter edit mode ")
+                  " I to write ")
     screen.addstr(messages_area_bottom_y - 2,
                   curses.COLS - 17,
                   " Ctrl-G to send ")
@@ -62,7 +62,7 @@ def open_messages_screen(sn, current_conversation, contact_buffer):
 
 def write_message(current_conversation):
     curses.curs_set(True)
-    # length, width, y, x
+    # height, width, top_y, top_x
     editwin = curses.newwin(int(curses.LINES/5),
                             int(curses.COLS*(3/4)) - 2,
                             messages_area_bottom_y,
