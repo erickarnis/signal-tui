@@ -27,8 +27,7 @@ from os import system
 
 # Registers the user with Whisper Systems. If it works, they will send a
 # verification number to the user's phone
-def register_device():
-    user_data[0] = username
+def register_device(username):
     with open('user_data.txt', 'w') as file:
         file.writelines(user_data)
     curses.endwin()

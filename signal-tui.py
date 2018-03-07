@@ -17,19 +17,12 @@ This will be under gpl someday
 # !/usr/bin/env python3
 import curses
 import traceback
-import os
-import string
-import math
-import time
-
-from curses.textpad import Textbox, rectangle
-from os import system
 
 #Signal-tui modules
 import login
 import messages
 import contacts
-import signal
+import signal_cli_wrapper
 
 # Define the appearance of some interface elements
 hotkey_attr = curses.A_BOLD | curses.A_UNDERLINE
@@ -54,10 +47,13 @@ total_conversations = 6
 contact_buffer = []
 message_buffer = []
 
-def erase(top_x,top_y, bottom_x, bottom_y):
+# fills a box with the given coordinates with spaces
+def erase(top_x, top_y, bottom_x, bottom_y):
     for x in range(top_x, bottom_x):
-            for y in range(top_y, bottom_y):
-                    screen.addstr(y, x, " ")
+        for y in range(top_y, bottom_y):
+            screen.addstr(y, x, " ")
+
+    screen.refresh()
 
 
 ####################
@@ -109,64 +105,64 @@ def main(stdscr):
     curses.curs_set(False)
 
     # This loop controls the hotkeys. Pressing e will exit the loop and the program
-    x = 0
-    while x != ord("e"):
+    key_struck = 0
+    while key_struck != ord("e"):
         #global current_conversation
-        x = screen.getch()
+        key_struck = screen.getch()
 
         # These hotkeys should be available from every screen
-        if x == ord("m"):
+        if key_struck == ord("m"):
             erase(1, 3, curses.COLS - 1, curses.LINES - 1)
             messages.open_messages_screen(screen, current_conversation, contact_buffer)
             current_screen = "messages"
 
-        elif x == ord("c"):
+        elif key_struck == ord("c"):
             current_screen = "contacts"
             erase(1, 3, curses.COLS - 1, curses.LINES - 1)
             contacts.open_contacts_screen(screen)
 
-        elif x == ord("s"):
+        elif key_struck == ord("s"):
             current_screen = "settings"
             erase(1, 3, curses.COLS - 1, curses.LINES - 1)
             quit("settings")
 
         if current_screen == "messages":
-            if x == ord("i"):
+            if key_struck == ord("i"):
                 messages.write_message(current_conversation)
-                
-            elif x == ord("h"):
+
+            elif key_struck == ord("h"):
                 if current_conversation != len(contact_buffer) - 1:
                     current_conversation += 1
                     messages.open_messages_screen(screen, current_conversation, contact_buffer)
 
-            elif x == ord("j"):
+            elif key_struck == ord("j"):
                 messages.page_down(current_conversation)
 
-            elif x == ord("k"):
+            elif key_struck == ord("k"):
                 messages.page_up(current_conversation)
 
-            elif x == ord("l"):
+            elif key_struck == ord("l"):
                 if current_conversation != 0:
                     current_conversation -= 1
                     messages.open_messages_screen(screen, current_conversation, contact_buffer)
 
         elif current_screen == "contacts":
-            if x == ord("i"):
+            if key_struck == ord("i"):
                 contacts.edit_contact()
 
-            elif x == ord("a"):
+            elif key_struck == ord("a"):
                 contacts.add_contact()
-                
-            elif x == ord("h"):
+
+            elif key_struck == ord("h"):
                 contacts.left()
 
-            elif x == ord("j"):
+            elif key_struck == ord("j"):
                 contacts.down()
 
-            elif x == ord("k"):
+            elif key_struck == ord("k"):
                 contacts.up()
 
-            elif x == ord("l"):
+            elif key_struck == ord("l"):
                 contacts.right()
 
 if __name__ == '__main__':

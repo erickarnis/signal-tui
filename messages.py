@@ -16,14 +16,9 @@ This will be under gpl someday
 '''
 # !/usr/bin/env python3
 import curses
-import traceback
-import os
-import string
 import math
-import time
 
 from curses.textpad import Textbox, rectangle
-from os import system
 
 screen = None
 
@@ -91,10 +86,12 @@ def add_message(current_conversation, originator, message):
     refresh_page_index(current_conversation)
     draw_messages(current_conversation)
 
-def erase(top_x,top_y, bottom_x, bottom_y):
+def erase(top_x, top_y, bottom_x, bottom_y):
     for x in range(top_x, bottom_x):
-            for y in range(top_y, bottom_y):
-                    screen.addstr(y, x, " ")
+        for y in range(top_y, bottom_y):
+            screen.addstr(y, x, " ")
+
+    screen.refresh()
 
 def import_messages():
     # TODO add a database
@@ -138,12 +135,12 @@ def draw_conversations_list(name_highlighted, contact_buffer):
 
 
 # This draws the messages of the conversation given as an argument to the message screen
-# TODO: The first character of each line except the first get's cut off. This bug has been 
+# TODO: The first character of each line except the first get's cut off. This bug has been
 # TODO: around for a while and if anyone can help I would appreciate it.
 def draw_messages(current_conversation):
 
-    # clear the messages area, ie the space to the left of the contacts panel and above the 
-    # message writing panel
+    # clear the messages area, ie the space to the left of the contacts panel
+    # and above the message writing panel
     erase(int(curses.COLS/4) + 1, 3, curses.COLS - 2, messages_area_bottom_y - 2)
 
     line_len = int(curses.COLS*(1/2) - 5)
@@ -158,7 +155,7 @@ def draw_messages(current_conversation):
 
     for message in reversed_message[page_index[current_page]:]:
 
-        # Check if the message was sent or received and put the message on the left 
+        # Check if the message was sent or received and put the message on the left
         # or right respectively
         if message[0] == "s":
             left_x = int(curses.COLS*(1/2))
@@ -177,7 +174,7 @@ def draw_messages(current_conversation):
         if (message_bottom_y - 3 - line_num) < 3:
             global top_message
             top_message = reversed_message.index(message)
-            screen.addstr(4, int(5*curses.COLS/8) - 5, "more above")
+            screen.addstr(3, int(5*curses.COLS/8) - 5, "more above")
             break
 
         for x in range(0, line_num):
@@ -185,8 +182,8 @@ def draw_messages(current_conversation):
             end_line_index = (x + 1) * line_len - 1
             line = message[1][start_line_index: end_line_index]
             screen.addstr(message_bottom_y - 2 - line_num + x + 1,
-                              left_x + 1,
-                              line, curses.A_STANDOUT)
+                          left_x + 1,
+                          line, curses.A_STANDOUT)
 
         rectangle(screen,
                   message_bottom_y - 2 - line_num,
@@ -201,13 +198,13 @@ def draw_messages(current_conversation):
 
 def page_down(current_conversation):
     global current_page
-    if current_page != 0: 
-        current_page -=1
+    if current_page != 0:
+        current_page -= 1
         draw_messages(current_conversation)
 
 def page_up(current_conversation):
     global current_page
-    if current_page != page_index.index(page_index[-1]): 
+    if current_page != page_index.index(page_index[-1]):
         current_page += 1
         draw_messages(current_conversation)
 
@@ -232,7 +229,7 @@ def refresh_page_index(current_conversation):
         line_num = int(math.ceil(len(message[1])/line_len))
 
         if (message_bottom_y - 3 - line_num) < 3:
-            # append the index of the bottom message of the new page by adding 1 to 
+            # append the index of the bottom message of the new page by adding 1 to
             # the index of the top message of the last page
             page_index.append(reversed_message.index(message))
             message_bottom_y = messages_area_bottom_y - 3

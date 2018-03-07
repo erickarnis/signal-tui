@@ -16,14 +16,9 @@ This will be under gpl someday
 '''
 # !/usr/bin/env python3
 import curses
-import traceback
-import os
-import string
-import math
 import time
 
 from curses.textpad import Textbox, rectangle
-from os import system
 
 screen = None
 
@@ -37,7 +32,7 @@ def import_contacts(sn):
     # TODO add a database
     global screen, contact_buffer
     screen = sn
-    contact_buffer = [[0,"Thales Ferreira"], [1, "Manuela Bartolomeo"], [2, "Ace Falkner"], [3, "Bryan Hayes"], [4, "Luke Doliszny"], [5, "Noah Stranger"], [6, "Eliot Old"],[7,"John Smith"], [8, "Manuel Bart"], [9, "Aces Falk"], [10, "Bry Hay"], [11, "Luk Dol"], [12, "No Strange"], [13, "Felix Beiderman"], [14, "Linus T"], [15, "Richard S"], [16, "Peter Parker"],[17,"Tales Ferreira"], [111, "Manuela Bartolomeo"], [211, "Ace Falkner"], [311, "Bryan Hayes"], [411, "Luke Doliszny"], [511, "Noah Stranger"], [611, "Eliot Old"],[711,"John Smith"], [811, "Manuel Bart"], [911, "Aces Falk"], [101, "Bry Hay"], [111, "Luk Dol"], [112, "No Strange"], [113, "Felix Beiderman"], [114, "Linus T"], [115, "Richard S"], [116, "Peter Parker"]]
+    contact_buffer = [[6477798191,"Eric's Phone"], [1, "Manuela Bartolomeo"], [2, "Ace Falkner"], [3, "Bryan Hayes"], [4, "Luke Doliszny"], [5, "Noah Stranger"], [6, "Eliot Old"],[7,"John Smith"], [8, "Manuel Bart"], [9, "Aces Falk"], [10, "Bry Hay"], [11, "Luk Dol"], [12, "No Strange"], [13, "Felix Beiderman"], [14, "Linus T"], [15, "Richard S"], [16, "Peter Parker"],[17,"Tales Ferreira"], [111, "Manuela Bartolomeo"], [211, "Ace Falkner"], [311, "Bryan Hayes"], [411, "Luke Doliszny"], [511, "Noah Stranger"], [611, "Eliot Old"],[711,"John Smith"], [811, "Manuel Bart"], [911, "Aces Falk"], [101, "Bry Hay"], [111, "Luk Dol"], [112, "No Strange"], [113, "Felix Beiderman"], [114, "Linus T"], [115, "Richard S"], [116, "Peter Parker"]]
     return contact_buffer
 
 def open_contacts_screen(sn):
@@ -51,13 +46,13 @@ def open_contacts_screen(sn):
 
     screen.refresh()
 
-def erase(top_x,top_y, bottom_x, bottom_y):
+def erase(top_x, top_y, bottom_x, bottom_y):
     for x in range(top_x, bottom_x):
-            for y in range(top_y, bottom_y):
-                    screen.addstr(y, x, " ")
+        for y in range(top_y, bottom_y):
+            screen.addstr(y, x, " ")
 
     screen.refresh()
-   
+
 
 def draw_contacts(name_highlighted):
     erase(1, 3, curses.COLS - 1, curses.LINES - 1)
@@ -72,18 +67,20 @@ def draw_contacts(name_highlighted):
 
 
     screen.addstr(3, 3, "A to add")
-
     screen.addstr(3, curses.COLS - len("I to edit") - 3, "I to edit")
 
     for contact in contact_buffer[first_contact_on_page:]:
 
         # if selected
         if contact_buffer.index(contact) == name_highlighted:
-            screen.addstr(top_y + 2, left_x + 2, contact[1][:right_x - left_x - 2], curses.A_STANDOUT)
+            screen.addstr(top_y + 2,
+                          left_x + 2,
+                          contact[1][:right_x - left_x - 2],
+                          curses.A_STANDOUT)
             screen.addstr(top_y + 3, left_x + 2, str(contact[0]), curses.A_NORMAL)
 
         # if unselected
-        else: 
+        else:
             screen.addstr(top_y + 2, left_x + 2, contact[1][:right_x - left_x - 2], curses.A_NORMAL)
             screen.addstr(top_y + 3, left_x + 2, str(contact[0]), curses.A_NORMAL)
 
@@ -94,7 +91,7 @@ def draw_contacts(name_highlighted):
         right_x += x_increment
 
         # if end of row start next row
-        if right_x > curses.COLS - 3: 
+        if right_x > curses.COLS - 3:
             top_y += y_increment
             bottom_y += y_increment
             left_x = 4
@@ -119,20 +116,20 @@ def left():
     elif contact_highlighted != 0:
         contact_highlighted -= 1
         first_contact_on_page -= 16
-        draw_contacts(contact_highlighted)   
+        draw_contacts(contact_highlighted)
 
 def down():
     global contact_highlighted, first_contact_on_page
 
     if (contact_highlighted + 3) < contact_buffer.index(contact_buffer[-1]):
 
-        if (((contact_highlighted + 1) % 16) <= 12 and ((contact_highlighted + 1) % 16) != 0) or contact_highlighted == 0: 
-            contact_highlighted += 4   
+        if (((contact_highlighted + 1) % 16) <= 12 and ((contact_highlighted + 1) % 16) != 0) or contact_highlighted == 0:
+            contact_highlighted += 4
             draw_contacts(contact_highlighted)
-        else: 
+        else:
             contact_highlighted += 4
             first_contact_on_page += 16
-            draw_contacts(contact_highlighted)   
+            draw_contacts(contact_highlighted)
 
 def up():
     global contact_highlighted, first_contact_on_page
@@ -143,20 +140,20 @@ def up():
     elif contact_highlighted >= 4:
         contact_highlighted -= 4
         first_contact_on_page -= 16
-        draw_contacts(contact_highlighted)  
+        draw_contacts(contact_highlighted)
 
 def right():
     global contact_highlighted, first_contact_on_page
 
     if contact_highlighted != contact_buffer.index(contact_buffer[-1]):
 
-        if ((contact_highlighted + 1) % 16) != 0:    
+        if ((contact_highlighted + 1) % 16) != 0:
             contact_highlighted += 1
             draw_contacts(contact_highlighted)
-        else: 
+        else:
             contact_highlighted += 1
             first_contact_on_page += 16
-            draw_contacts(contact_highlighted)   
+            draw_contacts(contact_highlighted)
 
 def edit_contact():
 
@@ -196,6 +193,9 @@ def edit_contact():
 
     erase(left_x + 1, top_y + 1, right_x, bottom_y)
 
+    screen.addstr(3, 3, "Ctrl-G to commit")
+    screen.addstr(3, curses.COLS - len("I to edit") - 3, "         ")
+
     screen.addstr(top_y + 2, left_x + 2, "Name")
     screen.addstr(top_y + 6, left_x + 2, "Number")
     rectangle(screen, top_y + 3, left_x + 2, top_y + 5, right_x - 2)
@@ -204,18 +204,35 @@ def edit_contact():
     screen.refresh()
 
     new_name = add_text_box(1, int((curses.COLS - 4)/4) - 9, top_y + 4, left_x + 3)
-    # BUG: mystery blinking cursor appears near bottom of screen after this line is executed
     new_number = add_text_box(1, int((curses.COLS - 4)/4) - 9, top_y + 8, left_x + 3)
 
     # TODO: write name and number to database
-    contact_buffer[contact_highlighted][0] = new_number
-    contact_buffer[contact_highlighted][1] = new_name
+    try: new_number = int(new_number)
+    except ValueError:
+        erase(left_x + 1, top_y + 1, right_x, bottom_y)
+        screen.addstr(top_y + 2, left_x + 2, "number not an int")
+        screen.refresh()
+        time.sleep(3)
+        draw_contacts(contact_highlighted)
+
+    if type(new_number) is int:
+        if len(str(new_number)) == 10:
+            contact_buffer[contact_highlighted][0] = new_number
+        else:
+            erase(left_x + 1, top_y + 1, right_x, bottom_y)
+            screen.addstr(top_y + 2, left_x + 2, "number not 10 digits")
+            screen.refresh()
+            time.sleep(3)
+            draw_contacts(contact_highlighted)
+
+    if new_name != "":
+        contact_buffer[contact_highlighted][1] = new_name
 
     draw_contacts(contact_highlighted)
 
 
 def add_text_box(height, width, top_y, left_x):
-    
+
     curses.curs_set(True)
     # height, width, top_y, top_x
     editwin = curses.newwin(height, width, top_y, left_x)
@@ -228,9 +245,11 @@ def add_text_box(height, width, top_y, left_x):
     # Get resulting contents
     message = box.gather()
 
-    if message: return message
-
+    #this renders the blinking cursor invisible again
     curses.curs_set(False)
+
+    return message
+
 
 def add_contact():
     erase(1, 3, curses.COLS - 1, curses.LINES - 1)
@@ -239,4 +258,3 @@ def add_contact():
 
     screen.addstr(int(curses.LINES/5) + 3, int(curses.COLS/4) + 3, "Name:")
     screen.addstr(int(curses.LINES/5) + 5, int(curses.COLS/4) + 3, "Number:")
-

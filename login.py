@@ -16,14 +16,9 @@ This will be under gpl someday
 '''
 # !/usr/bin/env python3
 import curses
-import traceback
-import os
-import string
-import math
 import time
 
-from curses.textpad import Textbox, rectangle
-from os import system
+from curses.textpad import rectangle
 
 def open_login_screen(screen, password_attempts):
     screen.clear()
@@ -57,8 +52,7 @@ def open_login_screen(screen, password_attempts):
 
     # Get then clean up password
     password = screen.getstr(25, int(curses.COLS / 2 - 30), 60)
-    password = str(password)[2:]
-    password = password[:-1]
+    password = str(password)[2:-1]
 
 
     if check_password(password):
