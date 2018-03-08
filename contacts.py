@@ -32,7 +32,7 @@ def import_contacts(sn):
     # TODO add a database
     global screen, contact_buffer
     screen = sn
-    contact_buffer = [[6477798191,"Eric's Phone"], [1, "Manuela Bartolomeo"], [2, "Ace Falkner"], [3, "Bryan Hayes"], [4, "Luke Doliszny"], [5, "Noah Stranger"], [6, "Eliot Old"],[7,"John Smith"], [8, "Manuel Bart"], [9, "Aces Falk"], [10, "Bry Hay"], [11, "Luk Dol"], [12, "No Strange"], [13, "Felix Beiderman"], [14, "Linus T"], [15, "Richard S"], [16, "Peter Parker"],[17,"Tales Ferreira"], [111, "Manuela Bartolomeo"], [211, "Ace Falkner"], [311, "Bryan Hayes"], [411, "Luke Doliszny"], [511, "Noah Stranger"], [611, "Eliot Old"],[711,"John Smith"], [811, "Manuel Bart"], [911, "Aces Falk"], [101, "Bry Hay"], [111, "Luk Dol"], [112, "No Strange"], [113, "Felix Beiderman"], [114, "Linus T"], [115, "Richard S"], [116, "Peter Parker"]]
+    contact_buffer = [[2144306489,"Eric's Phone"], [1, "Manuela Bartolomeo"], [2, "Ace Falkner"], [3, "Bryan Hayes"], [4, "Luke Doliszny"], [5, "Noah Stranger"], [6, "Eliot Old"],[7,"John Smith"], [8, "Manuel Bart"], [9, "Aces Falk"], [10, "Bry Hay"], [11, "Luk Dol"], [12, "No Strange"], [13, "Felix Beiderman"], [14, "Linus T"], [15, "Richard S"], [16, "Peter Parker"],[17,"Tales Ferreira"], [111, "Manuela Bartolomeo"], [211, "Ace Falkner"], [311, "Bryan Hayes"], [411, "Luke Doliszny"], [511, "Noah Stranger"], [611, "Eliot Old"],[711,"John Smith"], [811, "Manuel Bart"], [911, "Aces Falk"], [101, "Bry Hay"], [111, "Luk Dol"], [112, "No Strange"], [113, "Felix Beiderman"], [114, "Linus T"], [115, "Richard S"], [116, "Peter Parker"]]
     return contact_buffer
 
 def open_contacts_screen(sn):
@@ -224,12 +224,88 @@ def edit_contact():
             screen.refresh()
             time.sleep(3)
             draw_contacts(contact_highlighted)
-
-    if new_name != "":
+    if new_name:
         contact_buffer[contact_highlighted][1] = new_name
+    else:
+        erase(left_x + 1, top_y + 1, right_x, bottom_y)
+        screen.addstr(top_y + 2, left_x + 2, "enter a name")
+        screen.refresh()
+        time.sleep(3)
+        draw_contacts(contact_highlighted)
 
     draw_contacts(contact_highlighted)
 
+def add_contact():
+    erase(1, 3, curses.COLS - 1, curses.LINES - 1)
+
+    rectangle(screen, int(curses.LINES/5), int(curses.COLS/4), int(3 * curses.LINES/4), int(3 * curses.COLS/4))
+
+    screen.addstr(int(curses.LINES/5) + 3, int(curses.COLS/4) + 3, "Name:")
+    screen.addstr(int(curses.LINES/5) + 8, int(curses.COLS/4) + 3, "Number:")
+
+    screen.addstr(3, 3, "Ctrl-G to commit")
+    screen.addstr(3, curses.COLS - len("I to edit") - 3, "         ")
+
+    rectangle(screen, 
+              int(curses.LINES/5) + 2,
+              int(curses.COLS/3 + 3), 
+              int(curses.LINES/5) + 4,
+              int(3 * curses.COLS/4) - 3)
+    rectangle(screen, 
+              int(curses.LINES/5) + 7,
+              int(curses.COLS/3 + 3), 
+              int(curses.LINES/5) + 9,
+              int(3 * curses.COLS/4) - 3)
+
+    screen.refresh()
+
+    new_name = add_text_box(1, 
+                            int((curses.COLS - 4)/4) - 9, 
+                            int(curses.LINES/5) + 3, 
+                            int(curses.COLS/3 + 4))
+    new_number = add_text_box(1, 
+                            int((curses.COLS - 4)/4) - 9, 
+                            int(curses.LINES/5) + 8, 
+                            int(curses.COLS/3 + 4))
+
+    # TODO: write name and number to database
+    if new_name:
+        try: new_number = int(new_number)
+        except ValueError:
+            erase(1, 3, curses.COLS - 1, curses.LINES - 1)
+            rectangle(screen, int(curses.LINES/5), int(curses.COLS/4), int(3 * curses.LINES/4), int(3 * curses.COLS/4))        
+            screen.addstr(int(curses.LINES/5) + 3, 
+                          int(curses.COLS/4) + 3, 
+                          "number not an int")
+            screen.refresh()
+            time.sleep(3)
+            add_contact()
+
+        if type(new_number) is int:
+            if len(str(new_number)) == 10:
+                new_contact = [new_number,new_name]
+                contact_buffer.append(new_contact)
+            else:
+                erase(1, 3, curses.COLS - 1, curses.LINES - 1)
+                rectangle(screen, int(curses.LINES/5), int(curses.COLS/4), int(3 * curses.LINES/4), int(3 * curses.COLS/4))        
+                screen.addstr(int(curses.LINES/5) + 3, 
+                              int(curses.COLS/4) + 3, 
+                             "number not 10 digits")
+                screen.refresh()
+                time.sleep(3)
+                add_contact()
+
+    else:
+        erase(1, 3, curses.COLS - 1, curses.LINES - 1)
+        rectangle(screen, int(curses.LINES/5), int(curses.COLS/4), int(3 * curses.LINES/4), int(3 * curses.COLS/4))        
+        screen.addstr(int(curses.LINES/5) + 3, 
+                      int(curses.COLS/4) + 3, 
+                     "enter a name")
+        screen.refresh()
+        time.sleep(3)
+        add_contact()
+
+    draw_contacts(contact_highlighted)
 
 def add_text_box(height, width, top_y, left_x):
 
@@ -249,12 +325,3 @@ def add_text_box(height, width, top_y, left_x):
     curses.curs_set(False)
 
     return message
-
-
-def add_contact():
-    erase(1, 3, curses.COLS - 1, curses.LINES - 1)
-
-    rectangle(screen, int(curses.LINES/5), int(curses.COLS/4), int(3 * curses.LINES/4), int(3 * curses.COLS/4))
-
-    screen.addstr(int(curses.LINES/5) + 3, int(curses.COLS/4) + 3, "Name:")
-    screen.addstr(int(curses.LINES/5) + 5, int(curses.COLS/4) + 3, "Number:")
