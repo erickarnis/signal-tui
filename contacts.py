@@ -77,7 +77,7 @@ def draw_contacts(name_highlighted):
                           left_x + 2,
                           contact[1][:right_x - left_x - 2],
                           curses.A_STANDOUT)
-            screen.addstr(top_y + 3, left_x + 2, str(contact[0]), curses.A_NORMAL)
+            screen.addstr(top_y + 3, left_x + 2, str(contact[0]), curses.A_STANDOUT)
 
         # if unselected
         else:

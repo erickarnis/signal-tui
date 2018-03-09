@@ -22,6 +22,7 @@ import traceback
 import login
 import messages
 import contacts
+import settings
 import signal_cli_wrapper
 
 # Define the appearance of some interface elements
@@ -42,7 +43,6 @@ menu_items = ["Messages", "Contacts", "Settings", "Exit"]
 current_screen = "login"
 
 current_conversation = 0
-total_conversations = 6
 
 contact_buffer = []
 message_buffer = []
@@ -124,7 +124,7 @@ def main(stdscr):
         elif key_struck == ord("s"):
             current_screen = "settings"
             erase(1, 3, curses.COLS - 1, curses.LINES - 1)
-            quit("settings")
+            settings.open_settings_screen(screen)
 
         if current_screen == "messages":
             if key_struck == ord("i"):
@@ -164,6 +164,17 @@ def main(stdscr):
 
             elif key_struck == ord("l"):
                 contacts.right()
+
+        elif current_screen == "settings":
+            if key_struck == ord("i"):
+                settings.edit_setting()
+
+            elif key_struck == ord("j"):
+                settings.down()
+
+            elif key_struck == ord("k"):
+                settings.up()
+
 
 if __name__ == '__main__':
     try:
