@@ -18,9 +18,17 @@ This will be under gpl someday
 import curses
 import time
 
+MAX_ATTEMPTS = 3
+
+screen = None
+
 from curses.textpad import rectangle
 
-def open_login_screen(screen, password_attempts):
+def open_login_screen(scr, attempts):
+    global screen
+
+    screen = scr
+
     screen.clear()
 
     x = int(curses.COLS / 2 - 40)
@@ -37,29 +45,53 @@ def open_login_screen(screen, password_attempts):
     screen.addstr(19, x, "              \@@@@@@  |                                         By Eric Karnis")
     screen.addstr(20, x, "               \______/ ")
 
-    if password_attempts == 0:
-        screen.addstr(23, int(curses.COLS / 2 - 7), "Enter Password")
-    elif password_attempts < 3:
-        screen.addstr(23, int(curses.COLS / 2 - 7), "Wrong Password")
-    else:
+    if attempts != 0 and attempts < MAX_ATTEMPTS:
+        screen.addstr(22, int(curses.COLS / 2 - 13), "Wrong Password or Username")
+    elif attempts >= MAX_ATTEMPTS:
         screen.addstr(25, int(curses.COLS / 2 - 7), "Too Many Attempts")
         screen.refresh()
         time.sleep(5)
-        quit("\033[1m" + "Too Many Password Attempts" + "\033[1m")
+        quit("\033[1m" + "Too Many Attempts" + "\033[1m")
 
-    rectangle(screen, 24, int(curses.COLS / 2 - 31), 26, int(curses.COLS / 2 + 31))
+    username = input_username()
+    password = input_password()
+
+    if check_username(username) and check_password(password):
+        return True
+    else:
+        attempts += 1
+        return open_login_screen(screen, attempts)
+
+def input_username():
+
+    screen.addstr(24, int(curses.COLS / 2 - 7), "Enter Username")
+    rectangle(screen, 25, int(curses.COLS / 2 - 31), 27, int(curses.COLS / 2 + 31))
+    screen.refresh()
+
+    # Get then clean up username
+    username = screen.getstr(26, int(curses.COLS / 2 - 30), 60)
+    username = str(username)[2:-1]
+
+    return username
+
+def input_password():
+
+    screen.addstr(24, int(curses.COLS / 2 - 7), "Enter Password")
+    rectangle(screen, 25, int(curses.COLS / 2 - 31), 27, int(curses.COLS / 2 + 31))
     screen.refresh()
 
     # Get then clean up password
-    password = screen.getstr(25, int(curses.COLS / 2 - 30), 60)
+    password = screen.getstr(26, int(curses.COLS / 2 - 30), 60)
     password = str(password)[2:-1]
 
+    return password
 
-    if check_password(password):
+
+def check_username(username):
+    if username == "e":
         return True
     else:
-        password_attempts += 1
-        return open_login_screen(screen, password_attempts)
+        return False
 
 # TODO implement password creation, hashing, and storing
 def check_password(password):

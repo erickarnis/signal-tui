@@ -101,8 +101,7 @@ def main(stdscr):
         message_buffer = messages.import_messages()
         messages.open_messages_screen(screen, 0, contact_buffer)
         current_screen = "messages"
-
-    curses.curs_set(False)
+        curses.curs_set(False)
 
     # This loop controls the hotkeys. Pressing e will exit the loop and the program
     key_struck = 0
