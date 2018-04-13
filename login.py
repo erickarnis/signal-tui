@@ -17,6 +17,7 @@ This will be under gpl someday
 # !/usr/bin/env python3
 import curses
 import time
+import pathlib
 
 MAX_ATTEMPTS = 3
 
@@ -88,10 +89,12 @@ def input_password():
 
 
 def check_username(username):
-    if username == "e":
-        return True
-    else:
-        return False
+    # signal-tui's directory
+    user_database = "/home/vgatz/Projects/signal-tui/" + username
+    p = pathlib.Path(user_database)
+
+    # user exists if database exists
+    return p.is_file()
 
 # TODO implement password creation, hashing, and storing
 def check_password(password):

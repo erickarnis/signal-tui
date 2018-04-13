@@ -17,6 +17,9 @@ This will be under gpl someday
 # !/usr/bin/env python3
 import curses
 import traceback
+import pathlib
+import os
+import re
 
 #Signal-tui modules
 import login
@@ -33,11 +36,14 @@ menu_attr = curses.A_NORMAL
 EXIT = 0
 CONTINUE = 1
 
+# TODO change this to a more sensible and flexible directory
+INSTALL_DIRECTORY = "/home/vgatz/Projects/signal-tui/"
+
 # Give screen module scope
 screen = None
 
 # Define the topbar menus
-menu_items = ["Messages", "Contacts", "Settings", "Exit"]
+menu_items = ["Messages", "Contacts", "Guide", "Settings", "Exit"]
 
 # variables that define the state of the program
 current_screen = "login"
@@ -69,7 +75,7 @@ def draw_top_menu():
         offset = int(curses.COLS/10 - len(menu_name)/2)
         screen.addstr(1, left + offset, menu_hotkey, hotkey_attr)
         screen.addstr(1, left + offset + 1, menu_no_hot, menu_attr)
-        left = left + int(curses.COLS/5)
+        left = left + int(curses.COLS/6)
 
     # Draw application title
     offset = int(curses.COLS - len("signal-tui"))
@@ -92,6 +98,20 @@ def main(stdscr):
     screen.box()
     screen.refresh()
 
+    # Check if any users exist by looking for their databases
+    # if none exist, open user creation screen
+    filenames = next(os.walk(INSTALL_DIRECTORY))[2]
+    p = re.compile("^[^.]*$")
+
+    for file in filenames:
+        search_object = p.search(str(file))
+
+        if search_object:
+           break
+
+        elif filenames.index(file) == filenames.index(filenames[-1]):
+            open_user_creation_screen()
+
     # Start the program
     if login.open_login_screen(screen, 0):
         screen.clear()
@@ -104,7 +124,7 @@ def main(stdscr):
         curses.curs_set(False)
 
     # This loop controls the hotkeys. Pressing e will exit the loop and the program
-    key_struck = 0
+    key_struck = ""
     while key_struck != ord("e"):
         #global current_conversation
         key_struck = screen.getch()
