@@ -207,6 +207,7 @@ def edit_contact():
     new_number = add_text_box(1, int((curses.COLS - 4)/4) - 9, top_y + 8, left_x + 3)
 
     # TODO: write name and number to database
+    
     try: new_number = int(new_number)
     except ValueError:
         erase(left_x + 1, top_y + 1, right_x, bottom_y)

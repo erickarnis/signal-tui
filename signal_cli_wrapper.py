@@ -21,26 +21,24 @@ import os
 import string
 import math
 import time
+import subprocess
 
 from curses.textpad import Textbox, rectangle
-from os import system
+
+phone_number = ""
 
 # Registers the user with Whisper Systems. If it works, they will send a
 # verification number to the user's phone
-def register_device(username):
-    with open('user_data.txt', 'w') as file:
-        file.writelines(user_data)
-    curses.endwin()
-    execute_cmd("signal-cli -u " + username + " register")
-
+def register_device(pnum):
+    global phone_number
+    phone_number = pnum
+    phone_number = "+1" + str(phone_number)
+    x = subprocess.run(["signal-cli", "-u", phone_number, "register"])
 
 # Send's user's verification number to Whisper Systems
 def verify_code(verification_number):
-    curses.endwin()
-    execute_cmd(
-        "signal-cli -u " + username + " verify " + str(verification_number)
-    )
-
+    verification_number = str(verification_number)
+    x = subprocess.run(["signal-cli", "-u", phone_number, "verify", verification_number])
 
 # Sends a message to another signal user
 def send_message(recipient, message):

@@ -185,9 +185,13 @@ def main(stdscr):
                 contacts.right()
 
         elif current_screen == "settings":
-            if key_struck == ord("i"):
+            if key_struck == ord("l"):
                 settings.edit_setting()
 
+            if key_struck == ord("h"):
+                erase(1, 3, curses.COLS - 1, curses.LINES - 1)
+                settings.open_settings_screen(screen)
+                
             elif key_struck == ord("j"):
                 settings.down()
 
