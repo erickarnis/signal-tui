@@ -159,6 +159,9 @@ def edit_contact():
 
     entry = contact_highlighted % 16
 
+    #hardcoded 4x4 grid
+    #TODO: make this more flexible
+
     if 0 <= entry <= 3:
         top_y = 5
         bottom_y = int((curses.LINES - 4)/4)

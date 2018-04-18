@@ -19,17 +19,13 @@ import curses
 import time
 import pathlib
 
-MAX_ATTEMPTS = 3
+USERNAME_MAX_LENGTH = 20
 
 screen = None
 
 from curses.textpad import rectangle
 
-def open_login_screen(scr, attempts):
-
-    #skip login
-    #return True
-    #delete to reenable login
+def open_user_creation_screen(scr, error_message):
 
     global screen
 
@@ -51,24 +47,22 @@ def open_login_screen(scr, attempts):
     screen.addstr(19, x, "              \@@@@@@  |                                         By Eric Karnis")
     screen.addstr(20, x, "               \______/ ")
 
-    if attempts != 0 and attempts < MAX_ATTEMPTS:
-        screen.addstr(22, int(curses.COLS / 2 - 13), "Wrong Password or Username")
-    elif attempts >= MAX_ATTEMPTS:
-        screen.addstr(25, int(curses.COLS / 2 - 7), "Too Many Attempts")
-        screen.refresh()
-        time.sleep(5)
-        quit("\033[1m" + "Too Many Attempts" + "\033[1m")
+    if error_message == 0:
+        screen.addstr(22, int(curses.COLS / 2 - len("Create new user")/2), "Create new user")
+    else:
+        screen.addstr(22, int(curses.COLS / 2 - len(error_message)/2), error_message)
 
     curses.curs_set(True)
 
     username = input_username()
     password = input_password()
 
-    if check_username(username) and check_password(password):
+    username_test = check_username(username)
+
+    if username_test == 0 and check_password(password):
         return True
     else:
-        attempts += 1
-        return open_login_screen(screen, attempts)
+        open_user_creation_screen(screen, username_test)
 
 def input_username():
 
@@ -101,7 +95,15 @@ def check_username(username):
     p = pathlib.Path(user_database)
 
     # user exists if database exists
-    return p.is_file()
+    if p.is_file():
+        return "Username taken"
+
+    # else create user database
+
+    if len(username) > USERNAME_MAX_LENGTH:
+        return "Username too long"
+
+    return 0
 
 # TODO implement password creation, hashing, and storing
 def check_password(password):

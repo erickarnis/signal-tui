@@ -22,7 +22,9 @@ import os
 import re
 
 #Signal-tui modules
+import splash
 import login
+import user_creation
 import messages
 import contacts
 import settings
@@ -110,10 +112,22 @@ def main(stdscr):
            break
 
         elif filenames.index(file) == filenames.index(filenames[-1]):
-            open_user_creation_screen()
+            user_creation.open_user_creation_screen(screen)
 
     # Start the program
-    if login.open_login_screen(screen, 0):
+    if splash.open_splash_screen(screen):
+        if login.open_login_screen(screen, 0):
+            screen.clear()
+            draw_top_menu()
+            screen.border(0)
+            contact_buffer = contacts.import_contacts(screen)
+            message_buffer = messages.import_messages()
+            messages.open_messages_screen(screen, 0, contact_buffer)
+            current_screen = "messages"
+            curses.curs_set(False)
+
+    else:
+        user_creation.open_user_creation_screen(screen, 0)
         screen.clear()
         draw_top_menu()
         screen.border(0)
@@ -126,7 +140,6 @@ def main(stdscr):
     # This loop controls the hotkeys. Pressing e will exit the loop and the program
     key_struck = ""
     while key_struck != ord("e"):
-        #global current_conversation
         key_struck = screen.getch()
 
         # These hotkeys should be available from every screen
@@ -145,6 +158,7 @@ def main(stdscr):
             erase(1, 3, curses.COLS - 1, curses.LINES - 1)
             settings.open_settings_screen(screen)
 
+        # the hotkeys below are screen specific
         if current_screen == "messages":
             if key_struck == ord("i"):
                 messages.write_message(current_conversation)

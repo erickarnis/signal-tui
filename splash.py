@@ -25,7 +25,7 @@ screen = None
 
 from curses.textpad import rectangle
 
-def open_login_screen(scr, attempts):
+def open_splash_screen(scr):
 
     #skip login
     #return True
@@ -51,61 +51,20 @@ def open_login_screen(scr, attempts):
     screen.addstr(19, x, "              \@@@@@@  |                                         By Eric Karnis")
     screen.addstr(20, x, "               \______/ ")
 
-    if attempts != 0 and attempts < MAX_ATTEMPTS:
-        screen.addstr(22, int(curses.COLS / 2 - 13), "Wrong Password or Username")
-    elif attempts >= MAX_ATTEMPTS:
-        screen.addstr(25, int(curses.COLS / 2 - 7), "Too Many Attempts")
-        screen.refresh()
-        time.sleep(5)
-        quit("\033[1m" + "Too Many Attempts" + "\033[1m")
 
-    curses.curs_set(True)
+    screen.addstr(23, int(curses.COLS / 2 - len("1 to login")/2), "1 to login")
+    screen.addstr(25, int(curses.COLS / 2 - len("2 to add new user")/2), "2 to add new user")
 
-    username = input_username()
-    password = input_password()
+    curses.curs_set(False)
 
-    if check_username(username) and check_password(password):
-        return True
-    else:
-        attempts += 1
-        return open_login_screen(screen, attempts)
+    key_struck = ""
 
-def input_username():
+    while key_struck != "banana":
+        key_struck = screen.getch()
 
-    screen.addstr(24, int(curses.COLS / 2 - 7), "Enter Username")
-    rectangle(screen, 25, int(curses.COLS / 2 - 31), 27, int(curses.COLS / 2 + 31))
-    screen.refresh()
+        if key_struck == ord("1"):
+            return True
 
-    # Get then clean up username
-    username = screen.getstr(26, int(curses.COLS / 2 - 30), 60)
-    username = str(username)[2:-1]
+        elif key_struck == ord("2"):
+            return False
 
-    return username
-
-def input_password():
-
-    screen.addstr(24, int(curses.COLS / 2 - 7), "Enter Password")
-    rectangle(screen, 25, int(curses.COLS / 2 - 31), 27, int(curses.COLS / 2 + 31))
-    screen.refresh()
-
-    # Get then clean up password
-    password = screen.getstr(26, int(curses.COLS / 2 - 30), 60)
-    password = str(password)[2:-1]
-
-    return password
-
-
-def check_username(username):
-    # signal-tui's directory
-    user_database = "/home/vgatz/Projects/signal-tui/" + username
-    p = pathlib.Path(user_database)
-
-    # user exists if database exists
-    return p.is_file()
-
-# TODO implement password creation, hashing, and storing
-def check_password(password):
-    if password == "e":
-        return True
-    else:
-        return False
